@@ -1,0 +1,69 @@
+[
+  {
+    "id": 1,
+    "name": "The Witcher 3: Wild Hunt",
+    "background_image": "/placeholder.svg?height=400&width=600",
+    "rating": 4.5,
+    "released": "2015-05-19",
+    "genres": [{ "id": 5, "name": "RPG" }, { "id": 3, "name": "Adventure" }],
+    "platforms": [
+      { "platform": { "id": 4, "name": "PC" } },
+      { "platform": { "id": 18, "name": "PlayStation 4" } },
+      { "platform": { "id": 1, "name": "Xbox One" } },
+      { "platform": { "id": 7, "name": "Nintendo Switch" } }
+    ],
+    "stores": [
+      { "store": { "id": 1, "name": "Steam" } },
+      { "store": { "id": 2, "name": "PlayStation Store" } },
+      { "store": { "id": 3, "name": "Microsoft Store" } }
+    ],
+    "metacritic": 93,
+    "price": 29.99,
+    "currency": "EUR"
+  },
+  {
+    "id": 2,
+    "name": "Rocket League",
+    "background_image": "/placeholder.svg?height=400&width=600",
+    "rating": 4.2,
+    "released": "2015-07-07",
+    "genres": [{ "id": 15, "name": "Sports" }, { "id": 1, "name": "Racing" }],
+    "platforms": [
+      { "platform": { "id": 4, "name": "PC" } },
+      { "platform": { "id": 18, "name": "PlayStation 4" } },
+      { "platform": { "id": 1, "name": "Xbox One" } },
+      { "platform": { "id": 7, "name": "Nintendo Switch" } }
+    ],
+    "stores": [
+      { "store": { "id": 1, "name": "Steam" } },
+      { "store": { "id": 11, "name": "Epic Games Store" } },
+      { "store": { "id": 2, "name": "PlayStation Store" } }
+    ],
+    "metacritic": 86,
+    "price": 0,
+    "currency": "EUR",
+    "free_to_play": true
+  },
+  {
+    "id": 3,
+    "name": "Cyberpunk 2077",
+    "background_image": "/placeholder.svg?height=400&width=600",
+    "rating": 4.1,
+    "released": "2020-12-10",
+    "genres": [{ "id": 5, "name": "RPG" }, { "id": 4, "name": "Action" }],
+    "platforms": [
+      { "platform": { "id": 4, "name": "PC" } },
+      { "platform": { "id": 18, "name": "PlayStation 4" } },
+      { "platform": { "id": 187, "name": "PlayStation 5" } },
+      { "platform": { "id": 1, "name": "Xbox One" } }
+    ],
+    "stores": [
+      { "store": { "id": 1, "name": "Steam" } },
+      { "store": { "id": 5, "name": "GOG" } },
+      { "store": { "id": 2, "name": "PlayStation Store" } }
+    ],
+    "metacritic": 86,
+    "price": 59.99,
+    "currency": "EUR"
+  }
+]
