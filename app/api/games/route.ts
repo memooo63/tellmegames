@@ -1,9 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { searchGames } from "@/lib/api/rawg"
 import { selectGameWithStrategy, generateAlternatives, decodeSeed, generateSeed } from "@/lib/random"
-import LRUCache from "lru-cache"
+import { LRUCache } from "lru-cache"
 
-const cache = new LRUCache<string, any>({ max: 100, ttl: 1000 * 60 * 10, allowStale: true })
+const cache = new LRUCache<string, any>({
+  max: 100,
+  ttl: 1000 * 60 * 10,
+  allowStale: true
+})
 import { getRawgPlatformIds, getRawgStoreIds, getRawgGenreIds } from "@/lib/mapping"
 import { isPriceInRange } from "@/lib/price"
 import { matchGamesToPreferences } from "@/lib/game-matcher"
