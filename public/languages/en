@@ -1,0 +1,108 @@
+{
+  "nav": {
+    "title": "tellmenext.games",
+    "subtitle": "Discover your next favorite game"
+  },
+  "filters": {
+    "title": "Game Filters",
+    "platform": {
+      "label": "Platform",
+      "placeholder": "Select platform...",
+      "all": "All Platforms"
+    },
+    "store": {
+      "label": "Store",
+      "placeholder": "Select store...",
+      "all": "All Stores"
+    },
+    "genre": {
+      "label": "Genre",
+      "placeholder": "Select genre...",
+      "all": "All Genres"
+    },
+    "price": {
+      "label": "Price",
+      "max": "Max. Price",
+      "freeToPlay": "Free games only",
+      "currency": "$"
+    },
+    "quality": {
+      "label": "Only highly rated games (≥ 75%)",
+      "tooltip": "Shows only games with high ratings"
+    },
+    "button": {
+      "find": "Find Next Game",
+      "loading": "Rolling...",
+      "noFilters": "Please select at least one filter"
+    }
+  },
+  "game": {
+    "price": {
+      "free": "Free",
+      "freeToPlay": "Free-to-Play"
+    },
+    "rating": "Rating",
+    "metacritic": "Metacritic",
+    "released": "Released",
+    "availableOn": "Available on:",
+    "genres": "Genres",
+    "strategy": "Selection Strategy",
+    "actions": {
+      "reroll": "Reroll",
+      "alternative": "Suggest Alternative",
+      "share": "Share",
+      "openStore": "Open Store"
+    },
+    "tooltips": {
+      "alternative": "Suggest Alternative",
+      "share": "Share",
+      "strategy": "Selection Strategy: {{strategy}}"
+    }
+  },
+  "history": {
+    "title": "Recently Found",
+    "empty": "No games found yet",
+    "clear": "Clear History"
+  },
+  "sharing": {
+    "title": "Share Game",
+    "description": "Share this game with your friends",
+    "copyLink": "Copy Link",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "native": "Share",
+    "copied": "Link copied!",
+    "failed": "Failed to copy"
+  },
+  "errors": {
+    "noGames": "No games found. Try different filters.",
+    "apiError": "Error loading games",
+    "networkError": "Network error. Please try again.",
+    "generic": "An error occurred"
+  },
+  "empty": {
+    "title": "Ready for a new adventure?",
+    "description": "Set your filters and let us find the perfect game for you!",
+    "cta": "Set Filters"
+  },
+  "loading": {
+    "searching": "Searching for games...",
+    "loading": "Loading..."
+  },
+  "footer": {
+    "disclaimer": "This website only stores technically necessary cookies for language settings and filters. No tracking cookies.",
+    "legal": {
+      "imprint": "Imprint",
+      "privacy": "Privacy"
+    }
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    }
+  }
+}
