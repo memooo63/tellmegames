@@ -17,8 +17,16 @@ export interface RAWGResponse {
   results: RAWGGame[]
 }
 
-const RAWG_API_KEY = process.env.RAWG_API_KEY || "demo-key"
+import Bottleneck from "bottleneck"
+
+const RAWG_API_KEY = process.env.RAWG_KEY || ""
 const BASE_URL = "https://api.rawg.io/api"
+
+const limiter = new Bottleneck({
+  reservoir: 20,
+  reservoirRefreshAmount: 20,
+  reservoirRefreshInterval: 60 * 1000,
+})
 
 export async function searchGames(params: {
   platforms?: string
@@ -36,9 +44,7 @@ export async function searchGames(params: {
   })
 
   try {
-    const response = await fetch(`${BASE_URL}/games?${searchParams}`, {
-      next: { revalidate: 900 }, // Cache for 15 minutes
-    })
+    const response = await limiter.schedule(() => fetch(`${BASE_URL}/games?${searchParams}`))
 
     if (!response.ok) {
       throw new Error(`RAWG API error: ${response.status}`)
@@ -53,9 +59,7 @@ export async function searchGames(params: {
 
 export async function getGameDetails(id: number): Promise<RAWGGame> {
   try {
-    const response = await fetch(`${BASE_URL}/games/${id}?key=${RAWG_API_KEY}`, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    })
+    const response = await limiter.schedule(() => fetch(`${BASE_URL}/games/${id}?key=${RAWG_API_KEY}`))
 
     if (!response.ok) {
       throw new Error(`RAWG API error: ${response.status}`)
