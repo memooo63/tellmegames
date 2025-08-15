@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -8,29 +8,34 @@ import { Check, ChevronDown, Globe } from "lucide-react"
 import { useLanguage } from "@/hooks/useLanguage"
 import { SUPPORTED_LANGUAGES, getLanguageConfig } from "@/lib/languages"
 import type { Language } from "@/types/language"
+import { useRouter } from "next/navigation"
+import { setLanguage as setLanguageAction } from "@/app/actions/preferences"
 
 export function LanguageSwitcher() {
-  const { language, t, isLoading, setLanguage } = useLanguage()
+  const { language, t, isLoading, setLanguage: setLanguageClient } = useLanguage()
   const [open, setOpen] = useState(false)
-  const [isChanging, setIsChanging] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const router = useRouter()
 
   const currentLanguage = getLanguageConfig(language)
 
-  const handleLanguageChange = async (newLanguage: Language) => {
+  const handleLanguageChange = (newLanguage: Language) => {
     if (newLanguage === language) {
       setOpen(false)
       return
     }
 
-    setIsChanging(true)
-    try {
-      setLanguage(newLanguage)
-    } catch (error) {
-      console.error("Failed to change language:", error)
-    } finally {
-      setIsChanging(false)
-      setOpen(false)
-    }
+    startTransition(async () => {
+      try {
+        await setLanguageAction(newLanguage)
+        await setLanguageClient(newLanguage)
+        router.refresh()
+      } catch (error) {
+        console.error("Failed to change language:", error)
+      } finally {
+        setOpen(false)
+      }
+    })
   }
 
   if (isLoading) {
@@ -44,15 +49,15 @@ export function LanguageSwitcher() {
           variant="outline"
           size="sm"
           className="h-9 px-3 gap-2 min-w-[140px] justify-between bg-background/50 backdrop-blur-sm border-border/50 hover:bg-background/80"
-          disabled={isChanging}
+          disabled={isPending}
         >
           <div className="flex items-center gap-2">
             <motion.span
               className="text-base leading-none"
-              animate={isChanging ? { rotate: 360 } : { rotate: 0 }}
+              animate={isPending ? { rotate: 360 } : { rotate: 0 }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             >
-              {isChanging ? <Globe className="h-4 w-4" /> : currentLanguage.flag}
+              {isPending ? <Globe className="h-4 w-4" /> : currentLanguage.flag}
             </motion.span>
             <span className="text-sm font-medium">{currentLanguage.nativeName}</span>
           </div>
@@ -69,7 +74,7 @@ export function LanguageSwitcher() {
               className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-sm hover:bg-accent hover:text-accent-foreground transition-colors"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              disabled={isChanging}
+              disabled={isPending}
             >
               <span className="text-base">{lang.flag}</span>
               <span className="flex-1 text-left">{lang.nativeName}</span>

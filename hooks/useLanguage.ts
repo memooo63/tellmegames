@@ -4,11 +4,10 @@ import { useState, useEffect, useCallback } from "react"
 import type { Language, TranslationKeys } from "@/types/language"
 import { DEFAULT_LANGUAGE, detectBrowserLanguage } from "@/lib/languages"
 import { getCookie } from "@/lib/cookies"
-import { setLanguage as setLanguageAction } from "@/app/actions/preferences"
 
 interface UseLanguageReturn {
   language: Language
-  setLanguage: (lang: Language) => void
+  setLanguage: (lang: Language) => Promise<void>
   t: (key: string, namespace?: string) => string
   isLoading: boolean
 }
@@ -53,20 +52,16 @@ export function useLanguage(): UseLanguageReturn {
     const initialLang = cookieLang || detectBrowserLanguage()
     setLanguageState(initialLang)
 
-    if (!cookieLang) {
-      // Ensure cookie exists server-side
-      setLanguageAction(initialLang)
-    }
-
     loadTranslations(initialLang).finally(() => setIsLoading(false))
   }, [loadTranslations])
 
-  const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang)
-    setLanguageAction(lang)
-    // Reload page to apply server-side language changes
-    window.location.reload()
-  }, [])
+  const setLanguage = useCallback(
+    async (lang: Language) => {
+      setLanguageState(lang)
+      await loadTranslations(lang)
+    },
+    [loadTranslations],
+  )
 
   const t = useCallback(
     (key: string, namespace = "common"): string => {
