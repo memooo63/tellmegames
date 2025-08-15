@@ -6,7 +6,7 @@ import { LRUCache } from "lru-cache"
 const cache = new LRUCache<string, any>({
   max: 100,
   ttl: 1000 * 60 * 10,
-  allowStale: true
+  allowStale: true,
 })
 import { getRawgPlatformIds, getRawgStoreIds, getRawgGenreIds } from "@/lib/mapping"
 import { isPriceInRange } from "@/lib/price"
@@ -15,7 +15,7 @@ import fallbackGames from "@/lib/fallback-games.json"
 
 function revalidate(key: string, params: any) {
   searchGamesWithFallbacks(params)
-    .then((games) => cache.set(key, games))
+    .then(({ games }) => cache.set(key, games))
     .catch((err) => console.error("revalidate failed", err))
 }
 
@@ -89,8 +89,9 @@ function filterGames(
   })
 }
 
-async function searchGamesWithFallbacks(params: any): Promise<any[]> {
+async function searchGamesWithFallbacks(params: any): Promise<{ games: any[]; fallback: boolean }> {
   let games: any[] = []
+  let fallback = false
 
   try {
     // Primary: RAWG API
@@ -101,16 +102,23 @@ async function searchGamesWithFallbacks(params: any): Promise<any[]> {
     })
     games = response.results || []
   } catch (error) {
-    console.error("RAWG API failed, trying fallbacks:", error)
+    const message = error instanceof Error ? error.message : String(error)
+    if (message.includes("401")) {
+      console.error("RAWG API unauthorized - using fallback dataset")
+      games = [...fallbackGames]
+      fallback = true
+    } else {
+      console.error("RAWG API failed, trying fallbacks:", error)
+    }
   }
 
-  // If RAWG fails or returns few results, try fallback data
-  if (games.length < 10) {
+  // If RAWG returns few results, supplement with fallback data
+  if (!fallback && games.length < 10) {
     console.log("Using fallback games due to insufficient results")
     games = [...games, ...fallbackGames]
   }
 
-  return games
+  return { games, fallback }
 }
 
 export async function GET(request: NextRequest) {
@@ -132,40 +140,48 @@ export async function GET(request: NextRequest) {
 
     const cacheKey = `games:${platforms.join(",")}:${stores.join(",")}:${genres.join(",")}:${maxPrice}:${freeToPlay}:${onlyHighRated}:${startYear}:${endYear}`
 
-    // Check cache first
-    let games = cache.get(cacheKey, { allowStale: true })
+    // Build RAWG API parameters
+    const apiParams: any = {}
+    if (platforms.length > 0) {
+      apiParams.platforms = getRawgPlatformIds(platforms as any)
+    }
+    if (stores.length > 0) {
+      apiParams.stores = getRawgStoreIds(stores as any)
+    }
+    if (genres.length > 0) {
+      apiParams.genres = getRawgGenreIds(genres as any)
+    }
+    if (startYear && endYear) {
+      apiParams.dates = `${startYear}-01-01,${endYear}-12-31`
+    }
 
-    if (games) {
+    // Check cache first
+    let gamesData = cache.get(cacheKey, { allowStale: true }) as any[] | undefined
+    let fallbackUsed = false
+
+    if (gamesData) {
       if (cache.getRemainingTTL(cacheKey) <= 0) {
         revalidate(cacheKey, apiParams)
       }
     } else {
-      // Build RAWG API parameters
-      const apiParams: any = {}
-
-      if (platforms.length > 0) {
-        apiParams.platforms = getRawgPlatformIds(platforms as any)
-      }
-
-      if (stores.length > 0) {
-        apiParams.stores = getRawgStoreIds(stores as any)
-      }
-
-      if (genres.length > 0) {
-        apiParams.genres = getRawgGenreIds(genres as any)
-      }
-
-      if (startYear && endYear) {
-        apiParams.dates = `${startYear}-01-01,${endYear}-12-31`
-      }
-
-      games = await searchGamesWithFallbacks(apiParams)
-      cache.set(cacheKey, games)
+      const result = await searchGamesWithFallbacks(apiParams)
+      gamesData = result.games
+      fallbackUsed = result.fallback
+      cache.set(cacheKey, gamesData)
     }
 
-    const filteredGames = filterGames(games, {
+    // Retry without store filter if no results
+    if (gamesData.length === 0 && stores.length > 0) {
+      const retry = await searchGamesWithFallbacks({ ...apiParams, stores: undefined })
+      gamesData = retry.games
+      fallbackUsed = fallbackUsed || retry.fallback
+    }
+
+    const activeStores = gamesData.length === 0 ? [] : stores
+
+    const filteredGames = filterGames(gamesData, {
       platforms,
-      stores,
+      stores: activeStores,
       genres,
       maxPrice: maxPrice ? Math.min(Number.parseFloat(maxPrice), 125) : undefined,
       freeToPlay,
@@ -175,7 +191,7 @@ export async function GET(request: NextRequest) {
 
     if (filteredGames.length === 0) {
       if (freeToPlay) {
-        const f2pAll = filterGames(await searchGamesWithFallbacks({}), {
+        const f2pAll = filterGames((await searchGamesWithFallbacks({})).games, {
           freeToPlay: true,
           stores,
         })
@@ -193,6 +209,7 @@ export async function GET(request: NextRequest) {
         error: "Keine Spiele gefunden. Versuche weniger spezifische Filter.",
         games: [],
         total: 0,
+        fallback: fallbackUsed,
       })
     }
 
@@ -212,6 +229,7 @@ export async function GET(request: NextRequest) {
       seed: selection.usedSeed,
       strategy: selection.strategy,
       total: filteredGames.length,
+      fallback: fallbackUsed,
     }
 
     if (getAlternatives && selection.game) {

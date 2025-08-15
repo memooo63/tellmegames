@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Navigation } from "@/components/Navigation"
+import { Header } from "@/components/Header"
 import { CookieConsent } from "@/components/CookieConsent"
 import { Toaster } from "@/components/ui/toaster"
 import { cookies } from "next/headers"
@@ -29,12 +29,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const theme = cookieStore.get("theme")?.value === "light" ? "light" : "dark"
   const lang = cookieStore.get("lang")?.value || "de"
 
@@ -45,7 +45,7 @@ export default function RootLayout({
         <link rel="alternate" hrefLang="de" href="/" />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <Navigation />
+        <Header />
         <main role="main">{children}</main>
         <CookieConsent />
         <Toaster />
