@@ -1,0 +1,22 @@
+{
+  "name": "Gaming Finder Configuration",
+  "version": "1.0.0",
+  "description": "Centralized configuration for the Gaming Finder application",
+  "configurations": {
+    "app": "config/app.config.ts",
+    "api": "config/api.config.ts",
+    "language": "config/language.config.ts",
+    "theme": "config/theme.config.ts",
+    "game": "config/game.config.ts"
+  },
+  "setup": {
+    "required_env_vars": ["RAWG_API_KEY"],
+    "optional_env_vars": ["STEAM_API_KEY", "NEXT_PUBLIC_BASE_URL"],
+    "config_validation": "lib/config-utils.ts"
+  },
+  "usage": {
+    "import": "import { APP_CONFIG, API_CONFIG } from '@/config'",
+    "helpers": "import { getAppConfig, isFeatureEnabled } from '@/lib/config-utils'",
+    "validation": "import { validateConfig } from '@/lib/config-utils'"
+  }
+}

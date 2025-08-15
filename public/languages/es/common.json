@@ -1,0 +1,108 @@
+{
+  "nav": {
+    "title": "Gaming Finder",
+    "subtitle": "Descubre tu próximo juego favorito"
+  },
+  "filters": {
+    "title": "Filtros de Juego",
+    "platform": {
+      "label": "Plataforma",
+      "placeholder": "Seleccionar plataforma...",
+      "all": "Todas las Plataformas"
+    },
+    "store": {
+      "label": "Tienda",
+      "placeholder": "Seleccionar tienda...",
+      "all": "Todas las Tiendas"
+    },
+    "genre": {
+      "label": "Género",
+      "placeholder": "Seleccionar género...",
+      "all": "Todos los Géneros"
+    },
+    "price": {
+      "label": "Precio",
+      "max": "Precio Máx.",
+      "freeToPlay": "Solo juegos gratuitos",
+      "currency": "€"
+    },
+    "quality": {
+      "label": "Solo juegos bien valorados (≥ 75%)",
+      "tooltip": "Muestra solo juegos con altas valoraciones"
+    },
+    "button": {
+      "find": "Encontrar Juego Aleatorio",
+      "loading": "Buscando...",
+      "noFilters": "Por favor selecciona al menos un filtro"
+    }
+  },
+  "game": {
+    "price": {
+      "free": "Gratis",
+      "freeToPlay": "Free-to-Play"
+    },
+    "rating": "Valoración",
+    "metacritic": "Metacritic",
+    "released": "Lanzado",
+    "availableOn": "Disponible en:",
+    "genres": "Géneros",
+    "strategy": "Estrategia de Selección",
+    "actions": {
+      "reroll": "Volver a Tirar",
+      "alternative": "Sugerir Alternativa",
+      "share": "Compartir",
+      "openStore": "Abrir Tienda"
+    },
+    "tooltips": {
+      "alternative": "Sugerir Alternativa",
+      "share": "Compartir",
+      "strategy": "Estrategia de Selección: {{strategy}}"
+    }
+  },
+  "history": {
+    "title": "Encontrados Recientemente",
+    "empty": "Aún no se han encontrado juegos",
+    "clear": "Limpiar Historial"
+  },
+  "sharing": {
+    "title": "Compartir Juego",
+    "description": "Comparte este juego con tus amigos",
+    "copyLink": "Copiar Enlace",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "native": "Compartir",
+    "copied": "¡Enlace copiado!",
+    "failed": "Error al copiar"
+  },
+  "errors": {
+    "noGames": "No se encontraron juegos. Prueba otros filtros.",
+    "apiError": "Error al cargar juegos",
+    "networkError": "Error de red. Por favor inténtalo de nuevo.",
+    "generic": "Ocurrió un error"
+  },
+  "empty": {
+    "title": "¿Listo para una nueva aventura?",
+    "description": "¡Establece tus filtros y déjanos encontrar el juego perfecto para ti!",
+    "cta": "Establecer Filtros"
+  },
+  "loading": {
+    "searching": "Buscando juegos...",
+    "loading": "Cargando..."
+  },
+  "footer": {
+    "disclaimer": "Este sitio web solo almacena cookies técnicamente necesarias para configuraciones de idioma y filtros. Sin cookies de seguimiento.",
+    "legal": {
+      "imprint": "Aviso Legal",
+      "privacy": "Privacidad"
+    }
+  },
+  "settings": {
+    "language": "Idioma",
+    "theme": "Tema",
+    "themes": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "system": "Sistema"
+    }
+  }
+}

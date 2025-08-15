@@ -1,0 +1,114 @@
+{
+  "nav": {
+    "title": "Gaming Finder",
+    "subtitle": "Entdecke dein nächstes Lieblingsspiel"
+  },
+  "filters": {
+    "title": "Spielfilter",
+    "platform": {
+      "label": "Plattform",
+      "placeholder": "Plattform wählen...",
+      "all": "Alle Plattformen"
+    },
+    "store": {
+      "label": "Store",
+      "placeholder": "Store wählen...",
+      "all": "Alle Stores"
+    },
+    "genre": {
+      "label": "Genre",
+      "placeholder": "Genre wählen...",
+      "all": "Alle Genres"
+    },
+    "price": {
+      "label": "Preis",
+      "max": "Max. Preis",
+      "freeToPlay": "Nur kostenlose Spiele",
+      "currency": "€"
+    },
+    "quality": {
+      "label": "Nur gut bewertete Spiele (≥ 75%)",
+      "tooltip": "Zeigt nur Spiele mit hoher Bewertung"
+    },
+    "button": {
+      "find": "Zufälliges Spiel finden",
+      "loading": "Würfelt...",
+      "noFilters": "Bitte wähle mindestens einen Filter"
+    }
+  },
+  "game": {
+    "price": {
+      "free": "Kostenlos",
+      "freeToPlay": "Free-to-Play"
+    },
+    "rating": "Bewertung",
+    "metacritic": "Metacritic",
+    "released": "Veröffentlicht",
+    "availableOn": "Verfügbar auf:",
+    "genres": "Genres",
+    "strategy": "Auswahlstrategie",
+    "actions": {
+      "reroll": "Nochmal",
+      "alternative": "Alternative vorschlagen",
+      "share": "Teilen",
+      "openStore": "Store öffnen"
+    },
+    "tooltips": {
+      "alternative": "Alternative vorschlagen",
+      "share": "Teilen",
+      "strategy": "Auswahlstrategie: {{strategy}}"
+    }
+  },
+  "history": {
+    "title": "Zuletzt gefunden",
+    "empty": "Noch keine Spiele gefunden",
+    "clear": "Verlauf löschen"
+  },
+  "sharing": {
+    "title": "Spiel teilen",
+    "description": "Teile dieses Spiel mit deinen Freunden",
+    "copyLink": "Link kopieren",
+    "whatsapp": "WhatsApp",
+    "email": "E-Mail",
+    "native": "Teilen",
+    "copied": "Link kopiert!",
+    "failed": "Fehler beim Kopieren"
+  },
+  "errors": {
+    "noGames": "Keine Spiele gefunden. Versuche andere Filter.",
+    "apiError": "Fehler beim Laden der Spiele",
+    "networkError": "Netzwerkfehler. Bitte versuche es erneut.",
+    "generic": "Ein Fehler ist aufgetreten",
+    "retry": "Erneut versuchen"
+  },
+  "empty": {
+    "title": "Bereit für ein neues Abenteuer?",
+    "description": "Wähle deine gewünschten Filter aus und lass uns das perfekte Spiel für dich finden.",
+    "cta": "Filter setzen"
+  },
+  "loading": {
+    "searching": "Suche nach Spielen...",
+    "loading": "Lädt..."
+  },
+  "footer": {
+    "disclaimer": "Diese Website steht in keiner Verbindung zu Steam, Xbox, PlayStation, Epic Games, Nintendo oder anderen genannten Marken. Alle genannten Marken- und Produktnamen sind Eigentum ihrer jeweiligen Inhaber und werden ausschließlich zu beschreibenden Zwecken verwendet.",
+    "legal": {
+      "imprint": "Impressum",
+      "privacy": "Datenschutz"
+    }
+  },
+  "settings": {
+    "language": "Sprache",
+    "theme": "Design",
+    "themes": {
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System"
+    }
+  },
+  "cookies": {
+    "title": "Cookie-Einstellungen",
+    "accept": "Akzeptieren",
+    "decline": "Ablehnen"
+  }
+}
