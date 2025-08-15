@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useLanguage } from "@/hooks/useLanguage"
 import { decodeUrlState, createPermalink } from "@/lib/url-state"
 import { generateSeed } from "@/lib/random"
-import { buildStoreLink } from "@/lib/storeLinks"
+import type { StoreSlug } from "@/lib/storeLinks"
 
 export default function HomePage() {
   const searchParams = useSearchParams()
@@ -201,12 +201,6 @@ export default function HomePage() {
     setShareDialogOpen(true)
   }
 
-  const handleOpenStore = (game: Game) => {
-    const preferred = filters.stores[0] as any
-    const url = buildStoreLink(game, preferred)
-    window.open(url, "_blank", "noopener,noreferrer")
-  }
-
   const handleSelectFromHistory = (game: Game) => {
     setCurrentGame(game)
     setError(null)
@@ -321,10 +315,10 @@ export default function HomePage() {
                 game={currentGame}
                 seed={currentSeed || undefined}
                 strategy={currentStrategy}
+                preferredStore={filters.stores[0] as StoreSlug | undefined}
                 onReroll={handleReroll}
                 onAlternative={handleAlternative}
                 onShare={handleShare}
-                onOpenStore={handleOpenStore}
               />
             ) : (
               <motion.div

@@ -7,11 +7,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Check, ChevronDown, Globe } from "lucide-react"
 import { useLanguage } from "@/hooks/useLanguage"
 import { SUPPORTED_LANGUAGES, getLanguageConfig } from "@/lib/languages"
-import { changeLanguageAction } from "@/lib/actions/settings"
 import type { Language } from "@/types/language"
 
 export function LanguageSwitcher() {
-  const { language, t, isLoading } = useLanguage()
+  const { language, t, isLoading, setLanguage } = useLanguage()
   const [open, setOpen] = useState(false)
   const [isChanging, setIsChanging] = useState(false)
 
@@ -25,11 +24,9 @@ export function LanguageSwitcher() {
 
     setIsChanging(true)
     try {
-      await changeLanguageAction(newLanguage)
+      setLanguage(newLanguage)
     } catch (error) {
       console.error("Failed to change language:", error)
-      // Fallback to client-side reload
-      window.location.reload()
     } finally {
       setIsChanging(false)
       setOpen(false)

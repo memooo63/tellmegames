@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react"
 import type { Settings, Language } from "@/types/language"
 import { getCookie, setCookie, isCookieSupported } from "@/lib/cookies"
 import { DEFAULT_LANGUAGE } from "@/lib/languages"
-import { changeThemeAction, saveFiltersAction } from "@/lib/actions/settings"
+import { saveFiltersAction } from "@/lib/actions/settings"
+import { setTheme as setThemeAction } from "@/app/actions/preferences"
 
 const DEFAULT_SETTINGS: Settings = {
   language: DEFAULT_LANGUAGE,
@@ -92,7 +93,7 @@ export function useSettings(): UseSettingsReturn {
   const setTheme = useCallback(
     async (theme: Settings["theme"]) => {
       try {
-        await changeThemeAction(theme)
+        await setThemeAction(theme)
         setSettingsState((prev) => ({ ...prev, theme }))
       } catch (error) {
         console.error("Failed to change theme:", error)
