@@ -20,6 +20,7 @@ export interface RAWGResponse {
 import Bottleneck from "bottleneck"
 
 const RAWG_API_KEY = process.env.RAWG_KEY || ""
+const API_KEY_MISSING_ERROR = "RAWG API key is not configured"
 const BASE_URL = "https://api.rawg.io/api"
 
 const limiter = new Bottleneck({
@@ -37,6 +38,10 @@ export async function searchGames(params: {
   ordering?: string
   search?: string
 }): Promise<RAWGResponse> {
+  if (!RAWG_API_KEY) {
+    throw new Error(API_KEY_MISSING_ERROR)
+  }
+
   const searchParams = new URLSearchParams({
     key: RAWG_API_KEY,
     page_size: "40",
@@ -58,6 +63,10 @@ export async function searchGames(params: {
 }
 
 export async function getGameDetails(id: number): Promise<RAWGGame> {
+  if (!RAWG_API_KEY) {
+    throw new Error(API_KEY_MISSING_ERROR)
+  }
+
   try {
     const response = await limiter.schedule(() => fetch(`${BASE_URL}/games/${id}?key=${RAWG_API_KEY}`))
 
