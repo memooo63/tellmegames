@@ -39,7 +39,8 @@
   "game": {
     "price": {
       "free": "Gratuit",
-      "freeToPlay": "Free-to-Play"
+      "freeToPlay": "Free-to-Play",
+      "unavailable": "Prix indisponible"
     },
     "rating": "Note",
     "metacritic": "Metacritic",

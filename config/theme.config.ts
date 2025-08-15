@@ -1,6 +1,6 @@
 export const THEME_CONFIG = {
   // Available Themes
-  themes: ["light", "dark", "system"] as const,
+  themes: ["light", "dark"] as const,
 
   // Default Theme
   defaultTheme: "dark" as const,

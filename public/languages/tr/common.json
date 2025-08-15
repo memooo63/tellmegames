@@ -39,7 +39,8 @@
   "game": {
     "price": {
       "free": "Ücretsiz",
-      "freeToPlay": "Free-to-Play"
+      "freeToPlay": "Free-to-Play",
+      "unavailable": "Fiyat mevcut değil"
     },
     "rating": "Puan",
     "metacritic": "Metacritic",

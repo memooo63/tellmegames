@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Navigation } from "@/components/Navigation"
 import { CookieConsent } from "@/components/CookieConsent"
 import { Toaster } from "@/components/ui/toaster"
+import { cookies } from "next/headers"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -33,16 +34,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = cookies()
+  const theme = cookieStore.get("theme")?.value === "light" ? "light" : "dark"
+  const lang = cookieStore.get("lang")?.value || "de"
+
   return (
-    <html lang="de" className="dark" dir="ltr">
+    <html lang={lang} className={theme} dir="ltr">
       <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
+        <style>{`html { font-family: ${GeistSans.style.fontFamily}; --font-sans: ${GeistSans.variable}; --font-mono: ${GeistMono.variable}; }`}</style>
         <link rel="alternate" hrefLang="de" href="/" />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">

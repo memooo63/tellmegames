@@ -43,7 +43,9 @@ export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShar
   const [imageLoaded, setImageLoaded] = useState(false)
 
   const formatPrice = (price?: number, currency = "EUR") => {
-    if (!price || price === 0) return t("game.price.free")
+    if (price === undefined || price === null) {
+      return t("game.price.unavailable")
+    }
 
     const locale =
       language === "en"
@@ -110,10 +112,12 @@ export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShar
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <Image
-              src={game.background_image || "/placeholder.svg?height=400&width=600&query=gaming"}
+              src={game.background_image || "/placeholder.jpg"}
               alt={game.name}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-700"
+              placeholder="blur"
+              blurDataURL="/placeholder.jpg"
               onLoad={() => setImageLoaded(true)}
             />
           </motion.div>
@@ -257,15 +261,12 @@ export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShar
             className="flex items-center justify-between"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.4 }}
+          transition={{ delay: 1.1, duration: 0.4 }}
           >
             <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 400 }}>
-              <p className="text-lg font-semibold">{t("game.price.free")}</p>
-              {game.price && game.price > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {t("game.price.actual").replace("{{price}}", formatPrice(game.price, game.currency))}
-                </p>
-              )}
+              <p className="text-lg font-semibold">
+                {formatPrice(game.price, game.currency)}
+              </p>
             </motion.div>
 
             <div className="flex gap-2">

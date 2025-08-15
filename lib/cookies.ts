@@ -126,7 +126,7 @@ export function setLanguageCookie(language: string): void {
 }
 
 export function getThemeCookie(): string {
-  return getCookie("theme") || "system"
+  return getCookie("theme") || "dark"
 }
 
 export function setThemeCookie(theme: string): void {

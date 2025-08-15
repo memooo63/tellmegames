@@ -8,7 +8,7 @@ import { changeThemeAction, saveFiltersAction } from "@/lib/actions/settings"
 
 const DEFAULT_SETTINGS: Settings = {
   language: DEFAULT_LANGUAGE,
-  theme: "system",
+  theme: "dark",
   filters: {},
 }
 
@@ -40,7 +40,7 @@ export function useSettings(): UseSettingsReturn {
       }
 
       const lang = (getCookie("lang") as Language) || DEFAULT_LANGUAGE
-      const theme = (getCookie("theme") as Settings["theme"]) || "system"
+      const theme = (getCookie("theme") as Settings["theme"]) || "dark"
       const filtersJson = getCookie("filters")
 
       let filters = {}

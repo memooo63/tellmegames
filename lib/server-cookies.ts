@@ -7,14 +7,14 @@ export function getServerLanguage() {
 
 export function getServerTheme() {
   console.warn("Server-side cookie access disabled in preview environment")
-  return "system"
+  return "dark"
 }
 
 export function getServerSettings() {
   console.warn("Server-side cookie access disabled in preview environment")
   return {
     language: "de" as const,
-    theme: "system" as const,
+    theme: "dark" as const,
     filters: {},
   }
 }

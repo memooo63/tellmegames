@@ -4,21 +4,18 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Sun, Moon, Monitor } from "lucide-react"
+import { Sun, Moon } from "lucide-react"
 import { useSettings } from "@/hooks/useSettings"
 import { useLanguage } from "@/hooks/useLanguage"
-import type { Settings } from "@/types/language"
 
 const themeIcons = {
   light: Sun,
   dark: Moon,
-  system: Monitor,
 }
 
 const themeLabels = {
   light: "settings.themes.light",
   dark: "settings.themes.dark",
-  system: "settings.themes.system",
 }
 
 export function ThemeToggle() {
@@ -31,9 +28,7 @@ export function ThemeToggle() {
   }, [])
 
   const handleThemeChange = async () => {
-    const themes: Settings["theme"][] = ["light", "dark", "system"]
-    const currentIndex = themes.indexOf(settings.theme)
-    const nextTheme = themes[(currentIndex + 1) % themes.length]
+    const nextTheme = settings.theme === "light" ? "dark" : "light"
 
     try {
       await setTheme(nextTheme)
