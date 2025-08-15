@@ -19,7 +19,7 @@ export interface Game {
   released: string
   genres: Array<{ id: number; name: string }>
   platforms: Array<{ platform: { id: number; name: string } }>
-  stores: Array<{ store: { id: number; name: string } }>
+  stores: Array<{ store: { id: number; name: string; slug?: string }; url?: string }>
   metacritic?: number
   price?: number
   currency?: string
@@ -260,9 +260,12 @@ export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShar
             transition={{ delay: 1.1, duration: 0.4 }}
           >
             <motion.div whileHover={{ scale: 1.02 }} transition={{ type: "spring", stiffness: 400 }}>
-              <p className="text-lg font-semibold">
-                {game.free_to_play ? t("game.price.freeToPlay") : formatPrice(game.price, game.currency)}
-              </p>
+              <p className="text-lg font-semibold">{t("game.price.free")}</p>
+              {game.price && game.price > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {t("game.price.actual").replace("{{price}}", formatPrice(game.price, game.currency))}
+                </p>
+              )}
             </motion.div>
 
             <div className="flex gap-2">

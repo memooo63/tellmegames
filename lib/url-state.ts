@@ -7,6 +7,7 @@ export interface UrlState {
   maxPrice: number
   freeToPlay: boolean
   onlyHighRated: boolean
+  years: [number, number]
   seed?: number
   gameId?: number
   strategy?: string
@@ -37,6 +38,11 @@ export function encodeUrlState(state: UrlState): string {
 
   if (state.onlyHighRated) {
     params.set("hr", "1")
+  }
+
+  if (state.years && (state.years[0] !== 2000 || state.years[1] !== 2025)) {
+    params.set("ys", state.years[0].toString())
+    params.set("ye", state.years[1].toString())
   }
 
   if (state.seed) {
@@ -83,6 +89,12 @@ export function decodeUrlState(searchParams: URLSearchParams): Partial<UrlState>
 
   if (searchParams.get("hr") === "1") {
     state.onlyHighRated = true
+  }
+
+  const ys = searchParams.get("ys")
+  const ye = searchParams.get("ye")
+  if (ys && ye) {
+    state.years = [Number.parseInt(ys, 10), Number.parseInt(ye, 10)]
   }
 
   const seed = searchParams.get("seed")

@@ -7,30 +7,6 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
     nativeName: "Deutsch",
     flag: "🇩🇪",
   },
-  {
-    code: "en",
-    name: "English",
-    nativeName: "English",
-    flag: "🇺🇸",
-  },
-  {
-    code: "fr",
-    name: "Français",
-    nativeName: "Français",
-    flag: "🇫🇷",
-  },
-  {
-    code: "es",
-    name: "Español",
-    nativeName: "Español",
-    flag: "🇪🇸",
-  },
-  {
-    code: "tr",
-    name: "Türkçe",
-    nativeName: "Türkçe",
-    flag: "🇹🇷",
-  },
 ]
 
 export const DEFAULT_LANGUAGE: Language = "de"

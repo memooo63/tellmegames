@@ -1,4 +1,4 @@
-export type Language = "de" | "en" | "fr" | "es" | "tr"
+export type Language = "de"
 
 export interface LanguageConfig {
   code: Language

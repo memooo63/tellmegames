@@ -1,7 +1,7 @@
 {
-  "name": "Gaming Finder Configuration",
+  "name": "tellmenext.games Configuration",
   "version": "1.0.0",
-  "description": "Centralized configuration for the Gaming Finder application",
+  "description": "Centralized configuration for the tellmenext.games application",
   "configurations": {
     "app": "config/app.config.ts",
     "api": "config/api.config.ts",
