@@ -1,0 +1,108 @@
+{
+  "nav": {
+    "title": "tellmenext.games",
+    "subtitle": "Bir sonraki favori oyununuzu keşfedin"
+  },
+  "filters": {
+    "title": "Oyun Filtreleri",
+    "platform": {
+      "label": "Platform",
+      "placeholder": "Platform seçin...",
+      "all": "Tüm Platformlar"
+    },
+    "store": {
+      "label": "Mağaza",
+      "placeholder": "Mağaza seçin...",
+      "all": "Tüm Mağazalar"
+    },
+    "genre": {
+      "label": "Tür",
+      "placeholder": "Tür seçin...",
+      "all": "Tüm Türler"
+    },
+    "price": {
+      "label": "Fiyat",
+      "max": "Maks. Fiyat",
+      "freeToPlay": "Sadece ücretsiz oyunlar",
+      "currency": "₺"
+    },
+    "quality": {
+      "label": "Sadece yüksek puanlı oyunlar (≥ 75%)",
+      "tooltip": "Sadece yüksek puanlı oyunları gösterir"
+    },
+    "button": {
+      "find": "Sonraki oyunu bul",
+      "loading": "Arıyor...",
+      "noFilters": "Lütfen en az bir filtre seçin"
+    }
+  },
+  "game": {
+    "price": {
+      "free": "Ücretsiz",
+      "freeToPlay": "Free-to-Play"
+    },
+    "rating": "Puan",
+    "metacritic": "Metacritic",
+    "released": "Çıkış",
+    "availableOn": "Şurada mevcut:",
+    "genres": "Türler",
+    "strategy": "Seçim Stratejisi",
+    "actions": {
+      "reroll": "Tekrar Dene",
+      "alternative": "Alternatif Öner",
+      "share": "Paylaş",
+      "openStore": "Mağazayı Aç"
+    },
+    "tooltips": {
+      "alternative": "Alternatif Öner",
+      "share": "Paylaş",
+      "strategy": "Seçim Stratejisi: {{strategy}}"
+    }
+  },
+  "history": {
+    "title": "Son Bulunanlar",
+    "empty": "Henüz oyun bulunamadı",
+    "clear": "Geçmişi Temizle"
+  },
+  "sharing": {
+    "title": "Oyunu Paylaş",
+    "description": "Bu oyunu arkadaşlarınızla paylaşın",
+    "copyLink": "Bağlantıyı Kopyala",
+    "whatsapp": "WhatsApp",
+    "email": "E-posta",
+    "native": "Paylaş",
+    "copied": "Bağlantı kopyalandı!",
+    "failed": "Kopyalama başarısız"
+  },
+  "errors": {
+    "noGames": "Oyun bulunamadı. Farklı filtreler deneyin.",
+    "apiError": "Oyunlar yüklenirken hata",
+    "networkError": "Ağ hatası. Lütfen tekrar deneyin.",
+    "generic": "Bir hata oluştu"
+  },
+  "empty": {
+    "title": "Yeni bir maceraya hazır mısınız?",
+    "description": "Filtrelerinizi ayarlayın ve sizin için mükemmel oyunu bulalım!",
+    "cta": "Filtreleri Ayarla"
+  },
+  "loading": {
+    "searching": "Oyunlar aranıyor...",
+    "loading": "Yükleniyor..."
+  },
+  "footer": {
+    "disclaimer": "Bu web sitesi sadece dil ayarları ve filtreler için teknik olarak gerekli çerezleri saklar. Takip çerezi yoktur.",
+    "legal": {
+      "imprint": "Künye",
+      "privacy": "Gizlilik"
+    }
+  },
+  "settings": {
+    "language": "Dil",
+    "theme": "Tema",
+    "themes": {
+      "light": "Açık",
+      "dark": "Koyu",
+      "system": "Sistem"
+    }
+  }
+}
