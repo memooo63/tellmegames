@@ -6,18 +6,20 @@ export default function ImprintPage() {
       <div className="prose prose-neutral dark:prose-invert max-w-none">
         <h2>Angaben gemäß § 5 TMG</h2>
         <p>
-          [Hier würden die Kontaktdaten des Betreibers stehen]
+          Mehmet Özgüler
           <br />
-          Musterstraße 123
+          Koppoldstraße 1
           <br />
-          12345 Musterstadt
+          86551 Aichach
+          <br />
+          Deutschland
         </p>
 
         <h2>Kontakt</h2>
         <p>
-          E-Mail: kontakt@example.com
+          E-Mail:admin@avatarnil.dev
           <br />
-          Telefon: +49 (0) 123 456789
+          Discord: _xnil
         </p>
 
         <h2>Haftungsausschluss</h2>
