@@ -18,26 +18,6 @@ export function useLanguage(): UseLanguageReturn {
   const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Initialize language from cookie or browser
-  useEffect(() => {
-    const cookieLang = getCookie("lang") as Language
-    const initialLang = cookieLang || detectBrowserLanguage()
-    setLanguageState(initialLang)
-
-    if (!cookieLang) {
-      setCookie("lang", initialLang, { maxAge: 365 * 24 * 60 * 60 }) // 1 year
-    }
-
-    setIsLoading(false)
-  }, [])
-
-  const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang)
-    setCookie("lang", lang, { maxAge: 365 * 24 * 60 * 60 })
-    // Reload page to apply server-side language changes
-    window.location.reload()
-  }, [])
-
   const loadTranslations = useCallback(async (lang: Language, namespace = "common"): Promise<TranslationKeys> => {
     const cacheKey = `${lang}-${namespace}`
 
@@ -64,6 +44,26 @@ export function useLanguage(): UseLanguageReturn {
 
       return {}
     }
+  }, [])
+
+  // Initialize language from cookie or browser
+  useEffect(() => {
+    const cookieLang = getCookie("lang") as Language
+    const initialLang = cookieLang || detectBrowserLanguage()
+    setLanguageState(initialLang)
+
+    if (!cookieLang) {
+      setCookie("lang", initialLang, { maxAge: 365 * 24 * 60 * 60 }) // 1 year
+    }
+
+    loadTranslations(initialLang).finally(() => setIsLoading(false))
+  }, [loadTranslations])
+
+  const setLanguage = useCallback((lang: Language) => {
+    setLanguageState(lang)
+    setCookie("lang", lang, { maxAge: 365 * 24 * 60 * 60 })
+    // Reload page to apply server-side language changes
+    window.location.reload()
   }, [])
 
   const t = useCallback(

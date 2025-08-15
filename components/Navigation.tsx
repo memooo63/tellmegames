@@ -7,7 +7,11 @@ import { useLanguage } from "@/hooks/useLanguage"
 import { Gamepad2 } from "lucide-react"
 
 export function Navigation() {
-  const { t } = useLanguage()
+  const { t, isLoading } = useLanguage()
+
+  if (isLoading) {
+    return null
+  }
 
   return (
     <motion.nav

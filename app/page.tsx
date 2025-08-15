@@ -19,7 +19,7 @@ export default function HomePage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { toast } = useToast()
-  const { t } = useLanguage()
+  const { t, isLoading: isLangLoading } = useLanguage()
 
   const [currentGame, setCurrentGame] = useState<Game | null>(null)
   const [currentSeed, setCurrentSeed] = useState<number | null>(null)
@@ -237,6 +237,10 @@ export default function HomePage() {
 
   const handleRetry = () => {
     setError(null)
+  }
+
+  if (isLangLoading) {
+    return null
   }
 
   return (

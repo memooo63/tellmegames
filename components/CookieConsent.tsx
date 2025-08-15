@@ -10,13 +10,17 @@ import { useLanguage } from "@/hooks/useLanguage"
 
 export function CookieConsent() {
   const [showConsent, setShowConsent] = useState(false)
-  const { t } = useLanguage()
+  const { t, isLoading } = useLanguage()
 
   useEffect(() => {
     // Show consent banner if not already accepted
     const hasConsent = hasConsentCookie()
     setShowConsent(!hasConsent)
   }, [])
+
+  if (isLoading) {
+    return null
+  }
 
   const handleAccept = () => {
     setConsentCookie()
