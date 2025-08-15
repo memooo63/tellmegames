@@ -1,6 +1,6 @@
 export const APP_CONFIG = {
   // App Information
-  name: "Gaming Finder",
+  name: "tellmenext.games",
   version: "1.0.0",
   description: "Entdecke dein nächstes Lieblingsspiel",
 
@@ -23,7 +23,7 @@ export const APP_CONFIG = {
     cookieConsent: true,
     analytics: false,
     darkMode: true,
-    multiLanguage: true,
+    multiLanguage: false,
   },
 
   // Limits and Constraints
@@ -45,7 +45,7 @@ export const APP_CONFIG = {
   // SEO and Meta
   seo: {
     keywords: ["Spiele", "Gaming", "Zufallsgenerator", "Spielefinder", "kostenlos"],
-    author: "Gaming Finder Team",
+    author: "tellmenext.games",
     robots: "index, follow",
   },
 } as const

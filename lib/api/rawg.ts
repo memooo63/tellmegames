@@ -6,7 +6,7 @@ export interface RAWGGame {
   released: string
   genres: Array<{ id: number; name: string }>
   platforms: Array<{ platform: { id: number; name: string } }>
-  stores: Array<{ store: { id: number; name: string } }>
+  stores: Array<{ store: { id: number; name: string; slug: string }; url?: string }>
   metacritic: number
   playtime: number
   short_screenshots: Array<{ image: string }>

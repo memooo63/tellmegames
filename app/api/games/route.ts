@@ -141,11 +141,13 @@ export async function GET(request: NextRequest) {
   const seedParam = searchParams.get("seed")
   const strategy = searchParams.get("strategy") || "balanced"
   const getAlternatives = searchParams.get("alternatives") === "true"
+  const startYear = searchParams.get("startYear")
+  const endYear = searchParams.get("endYear")
 
   try {
     const seed = seedParam ? decodeSeed(seedParam) : generateSeed()
 
-    const cacheKey = `games:${platforms.join(",")}:${stores.join(",")}:${genres.join(",")}:${maxPrice}:${freeToPlay}:${onlyHighRated}`
+    const cacheKey = `games:${platforms.join(",")}:${stores.join(",")}:${genres.join(",")}:${maxPrice}:${freeToPlay}:${onlyHighRated}:${startYear}:${endYear}`
 
     // Check cache first
     let games = gameCache.get(cacheKey)
@@ -166,6 +168,10 @@ export async function GET(request: NextRequest) {
         apiParams.genres = getRawgGenreIds(genres as any)
       }
 
+      if (startYear && endYear) {
+        apiParams.dates = `${startYear}-01-01,${endYear}-12-31`
+      }
+
       games = await searchGamesWithFallbacks(apiParams)
       gameCache.set(cacheKey, games, 15)
     }
@@ -174,13 +180,28 @@ export async function GET(request: NextRequest) {
       platforms,
       stores,
       genres,
-      maxPrice: maxPrice ? Number.parseFloat(maxPrice) : undefined,
+      maxPrice: maxPrice ? Math.min(Number.parseFloat(maxPrice), 125) : undefined,
       freeToPlay,
       onlyHighRated,
       minRating: 3.0,
     })
 
     if (filteredGames.length === 0) {
+      if (freeToPlay) {
+        const f2pAll = filterGames(await searchGamesWithFallbacks({}), {
+          freeToPlay: true,
+          stores,
+        })
+        if (f2pAll.length > 0) {
+          const fallback = selectGameWithStrategy(f2pAll, seed, strategy)
+          return NextResponse.json({
+            game: fallback.game,
+            seed: fallback.usedSeed,
+            strategy: fallback.strategy,
+            total: f2pAll.length,
+          })
+        }
+      }
       return NextResponse.json({
         error: "Keine Spiele gefunden. Versuche weniger spezifische Filter.",
         games: [],
@@ -192,7 +213,7 @@ export async function GET(request: NextRequest) {
       platforms,
       stores,
       genres,
-      maxPrice: maxPrice ? Number.parseFloat(maxPrice) : undefined,
+      maxPrice: maxPrice ? Math.min(Number.parseFloat(maxPrice), 125) : undefined,
       freeToPlay,
       onlyHighRated,
     })

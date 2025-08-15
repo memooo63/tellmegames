@@ -10,6 +10,7 @@ import { PlatformSelect } from "./PlatformSelect"
 import { StoreSelect } from "./StoreSelect"
 import { GenreSelect } from "./GenreSelect"
 import { PriceControl } from "./PriceControl"
+import { YearControl } from "./YearControl"
 import { Gamepad2, Shuffle, Star, Sparkles } from "lucide-react"
 import { generateSeed } from "@/lib/random"
 import { useLanguage } from "@/hooks/useLanguage"
@@ -22,6 +23,7 @@ export interface FilterState {
   maxPrice: number
   freeToPlay: boolean
   onlyHighRated: boolean
+  years: [number, number]
 }
 
 interface FilterBarProps {
@@ -42,6 +44,7 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
     maxPrice: 60,
     freeToPlay: false,
     onlyHighRated: false,
+    years: [2000, 2025],
     ...initialFilters,
   })
 
@@ -86,6 +89,11 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
         params.append("maxPrice", filters.maxPrice.toString())
       }
 
+      if (filters.years) {
+        params.append("startYear", filters.years[0].toString())
+        params.append("endYear", filters.years[1].toString())
+      }
+
       if (filters.onlyHighRated) {
         params.append("onlyHighRated", "true")
       }
@@ -101,15 +109,17 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
 
       const data = await response.json()
 
-      if (data.error) {
-        throw new Error(data.error)
-      }
+        if (data.error) {
+          onError?.(data.error)
+          return
+        }
 
-      if (!data.game) {
-        throw new Error(t("errors.noGames"))
-      }
+        if (!data.game) {
+          onError?.(t("errors.noGames"))
+          return
+        }
 
-      onGameFound?.(data.game, seed, data.strategy)
+        onGameFound?.(data.game, seed, data.strategy)
     } catch (error) {
       console.error("Game search error:", error)
       onError?.(error instanceof Error ? error.message : t("errors.apiError"))
@@ -119,7 +129,12 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
     }
   }
 
-  const hasFilters = filters.platforms.length > 0 || filters.stores.length > 0 || filters.genres.length > 0
+  const hasFilters =
+    filters.platforms.length > 0 ||
+    filters.stores.length > 0 ||
+    filters.genres.length > 0 ||
+    filters.years[0] !== 2000 ||
+    filters.years[1] !== 2025
 
   return (
     <motion.div
@@ -149,7 +164,7 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6 }}
@@ -197,14 +212,25 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
               onFreeToPlayChange={(free) => handleFilterChange("freeToPlay", free)}
             />
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.4 }}
+          >
+            <YearControl
+              years={filters.years}
+              onChange={(years) => handleFilterChange("years", years)}
+            />
+          </motion.div>
         </motion.div>
 
-        <motion.div
-          className="flex items-center justify-center"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.8, duration: 0.4 }}
-        >
+          <motion.div
+            className="flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.9, duration: 0.4 }}
+          >
           <motion.div
             className="flex items-center space-x-2"
             whileHover={{ scale: 1.02 }}
@@ -234,12 +260,12 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
           </motion.div>
         </motion.div>
 
-        <motion.div
-          className="flex justify-center pt-4"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.4 }}
-        >
+          <motion.div
+            className="flex justify-center pt-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0, duration: 0.4 }}
+          >
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

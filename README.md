@@ -1,4 +1,4 @@
-# Gaming Finder - Zufällige Spielempfehlungen
+# tellmenext.games - Zufällige Spielempfehlungen
 
 Eine moderne Non-Profit-Website, die basierend auf deinen Präferenzen zufällig passende Spiele vorschlägt.
 
@@ -26,7 +26,7 @@ Eine moderne Non-Profit-Website, die basierend auf deinen Präferenzen zufällig
 1. **Repository klonen**
    \`\`\`bash
    git clone <repository-url>
-   cd gaming-finder
+   cd tellmegames
    \`\`\`
 
 2. **Dependencies installieren**
