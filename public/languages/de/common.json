@@ -41,11 +41,12 @@
     }
   },
   "game": {
-    "price": {
-      "free": "Kostenlos",
-      "freeToPlay": "Free-to-Play",
-      "actual": "Tatsächlicher Preis: {{price}}"
-    },
+      "price": {
+        "free": "Kostenlos",
+        "freeToPlay": "Free-to-Play",
+        "actual": "Tatsächlicher Preis: {{price}}",
+        "unavailable": "Preis nicht verfügbar"
+      },
     "rating": "Bewertung",
     "metacritic": "Metacritic",
     "released": "Veröffentlicht",

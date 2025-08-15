@@ -4,6 +4,8 @@ import { motion } from "framer-motion"
 // Language switcher and theme toggle removed – site is German-only and dark mode only
 import { useLanguage } from "@/hooks/useLanguage"
 import { Gamepad2 } from "lucide-react"
+import { ThemeToggle } from "./ThemeToggle"
+import { LanguageSwitcher } from "./LanguageSwitcher"
 
 export function Navigation() {
   const { t, isLoading } = useLanguage()
@@ -50,7 +52,8 @@ export function Navigation() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            {/* Theme and language controls removed */}
+            <LanguageSwitcher />
+            <ThemeToggle />
           </motion.div>
         </div>
       </div>

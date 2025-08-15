@@ -1,4 +1,4 @@
-export type Language = "de"
+export type Language = "de" | "en" | "fr" | "es" | "tr"
 
 export interface LanguageConfig {
   code: Language
@@ -13,7 +13,7 @@ export interface TranslationKeys {
 
 export interface Settings {
   language: Language
-  theme: "light" | "dark" | "system"
+  theme: "light" | "dark"
   filters: {
     platform?: string
     store?: string

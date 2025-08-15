@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useLanguage } from "@/hooks/useLanguage"
 import { decodeUrlState, createPermalink } from "@/lib/url-state"
 import { generateSeed } from "@/lib/random"
+import { buildStoreLink } from "@/lib/storeLinks"
 
 export default function HomePage() {
   const searchParams = useSearchParams()
@@ -201,34 +202,9 @@ export default function HomePage() {
   }
 
   const handleOpenStore = (game: Game) => {
-    if (game.stores && game.stores.length > 0) {
-      const entry = game.stores[0]
-      const store = entry.store
-      const title = encodeURIComponent(game.name)
-      let storeUrl = entry.url || ""
-
-      switch (store.name.toLowerCase()) {
-        case "steam":
-          storeUrl = entry.url || `https://store.steampowered.com/search/?term=${title}`
-          break
-        case "epic games store":
-          storeUrl = entry.url || `https://store.epicgames.com/store/en-US/search?q=${title}`
-          break
-        case "ea app":
-        case "origin":
-          storeUrl =
-            entry.url ||
-            (store.slug ? `https://www.ea.com/games/library/${store.slug}` : `https://www.ea.com/search?q=${title}`)
-          break
-        case "ubisoft connect":
-          storeUrl = entry.url || `https://store.ubisoft.com/search?q=${title}`
-          break
-        default:
-          storeUrl = entry.url || `https://www.google.com/search?q=${title}`
-      }
-
-      window.open(storeUrl, "_blank", "noopener,noreferrer")
-    }
+    const preferred = filters.stores[0] as any
+    const url = buildStoreLink(game, preferred)
+    window.open(url, "_blank", "noopener,noreferrer")
   }
 
   const handleSelectFromHistory = (game: Game) => {

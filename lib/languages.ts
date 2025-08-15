@@ -3,9 +3,33 @@ import type { Language, LanguageConfig } from "@/types/language"
 export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
   {
     code: "de",
-    name: "Deutsch",
+    name: "German",
     nativeName: "Deutsch",
     flag: "🇩🇪",
+  },
+  {
+    code: "en",
+    name: "English",
+    nativeName: "English",
+    flag: "🇬🇧",
+  },
+  {
+    code: "fr",
+    name: "French",
+    nativeName: "Français",
+    flag: "🇫🇷",
+  },
+  {
+    code: "es",
+    name: "Spanish",
+    nativeName: "Español",
+    flag: "🇪🇸",
+  },
+  {
+    code: "tr",
+    name: "Turkish",
+    nativeName: "Türkçe",
+    flag: "🇹🇷",
   },
 ]
 
