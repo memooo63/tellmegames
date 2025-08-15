@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Star, Calendar, ExternalLink, Shuffle, Share2, Dice6 } from "lucide-react"
 import { useLanguage } from "@/hooks/useLanguage"
 import Image from "next/image"
+import { buildStoreLink, type StoreSlug } from "@/lib/storeLinks"
 
 export interface Game {
   id: number
@@ -31,13 +32,13 @@ interface GameCardProps {
   game: Game
   seed?: number
   strategy?: string
+  preferredStore?: StoreSlug
   onReroll?: () => void
   onAlternative?: () => void
   onShare?: (game: Game, seed?: number) => void
-  onOpenStore?: (game: Game) => void
 }
 
-export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShare, onOpenStore }: GameCardProps) {
+export function GameCard({ game, seed, strategy, preferredStore, onReroll, onAlternative, onShare }: GameCardProps) {
   const { t, language } = useLanguage()
   const [isSharing, setIsSharing] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -335,7 +336,13 @@ export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShar
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400 }}
               >
-                <Button size="sm" onClick={() => onOpenStore?.(game)}>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const url = buildStoreLink(game.name, game.stores, preferredStore)
+                    window.open(url, "_blank", "noopener,noreferrer")
+                  }}
+                >
                   <ExternalLink className="h-4 w-4 mr-1" />
                   {t("game.actions.openStore")}
                 </Button>

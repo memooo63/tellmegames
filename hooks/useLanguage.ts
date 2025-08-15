@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react"
 import type { Language, TranslationKeys } from "@/types/language"
 import { DEFAULT_LANGUAGE, detectBrowserLanguage } from "@/lib/languages"
-import { getCookie, setCookie } from "@/lib/cookies"
+import { getCookie } from "@/lib/cookies"
+import { setLanguage as setLanguageAction } from "@/app/actions/preferences"
 
 interface UseLanguageReturn {
   language: Language
@@ -53,7 +54,8 @@ export function useLanguage(): UseLanguageReturn {
     setLanguageState(initialLang)
 
     if (!cookieLang) {
-      setCookie("lang", initialLang, { maxAge: 365 * 24 * 60 * 60 }) // 1 year
+      // Ensure cookie exists server-side
+      setLanguageAction(initialLang)
     }
 
     loadTranslations(initialLang).finally(() => setIsLoading(false))
@@ -61,7 +63,7 @@ export function useLanguage(): UseLanguageReturn {
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang)
-    setCookie("lang", lang, { maxAge: 365 * 24 * 60 * 60 })
+    setLanguageAction(lang)
     // Reload page to apply server-side language changes
     window.location.reload()
   }, [])
