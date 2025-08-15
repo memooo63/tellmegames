@@ -93,22 +93,28 @@ async function searchGamesWithFallbacks(params: any): Promise<{ games: any[]; fa
   let games: any[] = []
   let fallback = false
 
-  try {
-    // Primary: RAWG API
-    const response = await searchGames({
-      ...params,
-      page_size: "100", // Get more results for better filtering
-      ordering: "-rating,-metacritic", // Prioritize highly rated games
-    })
-    games = response.results || []
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    if (message.includes("401")) {
-      console.error("RAWG API unauthorized - using fallback dataset")
-      games = [...fallbackGames]
-      fallback = true
-    } else {
-      console.error("RAWG API failed, trying fallbacks:", error)
+  if (!process.env.RAWG_KEY) {
+    console.error("RAWG API key missing - using fallback dataset")
+    games = [...fallbackGames]
+    fallback = true
+  } else {
+    try {
+      // Primary: RAWG API
+      const response = await searchGames({
+        ...params,
+        page_size: "100", // Get more results for better filtering
+        ordering: "-rating,-metacritic", // Prioritize highly rated games
+      })
+      games = response.results || []
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (message.includes("401")) {
+        console.error("RAWG API unauthorized - using fallback dataset")
+        games = [...fallbackGames]
+        fallback = true
+      } else {
+        console.error("RAWG API failed, trying fallbacks:", error)
+      }
     }
   }
 
