@@ -1,33 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { searchGames } from "@/lib/api/rawg"
-import { gameCache } from "@/lib/cache"
 import { selectGameWithStrategy, generateAlternatives, decodeSeed, generateSeed } from "@/lib/random"
+import LRUCache from "lru-cache"
+
+const cache = new LRUCache<string, any>({ max: 100, ttl: 1000 * 60 * 10, allowStale: true })
 import { getRawgPlatformIds, getRawgStoreIds, getRawgGenreIds } from "@/lib/mapping"
 import { isPriceInRange } from "@/lib/price"
 import { matchGamesToPreferences } from "@/lib/game-matcher"
 import fallbackGames from "@/lib/fallback-games.json"
 
-// Rate limiting (simple in-memory store)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const windowMs = 60 * 1000 // 1 minute
-  const maxRequests = 30
-
-  const current = rateLimitMap.get(ip)
-
-  if (!current || now > current.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs })
-    return true
-  }
-
-  if (current.count >= maxRequests) {
-    return false
-  }
-
-  current.count++
-  return true
+function revalidate(key: string, params: any) {
+  searchGamesWithFallbacks(params)
+    .then((games) => cache.set(key, games))
+    .catch((err) => console.error("revalidate failed", err))
 }
 
 function filterGames(
@@ -125,12 +110,6 @@ async function searchGamesWithFallbacks(params: any): Promise<any[]> {
 }
 
 export async function GET(request: NextRequest) {
-  const ip = request.ip || "unknown"
-
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: "Rate limit exceeded. Please try again later." }, { status: 429 })
-  }
-
   const { searchParams } = new URL(request.url)
   const platforms = searchParams.get("platforms")?.split(",") || []
   const stores = searchParams.get("stores")?.split(",") || []
@@ -141,16 +120,22 @@ export async function GET(request: NextRequest) {
   const seedParam = searchParams.get("seed")
   const strategy = searchParams.get("strategy") || "balanced"
   const getAlternatives = searchParams.get("alternatives") === "true"
+  const startYear = searchParams.get("startYear")
+  const endYear = searchParams.get("endYear")
 
   try {
     const seed = seedParam ? decodeSeed(seedParam) : generateSeed()
 
-    const cacheKey = `games:${platforms.join(",")}:${stores.join(",")}:${genres.join(",")}:${maxPrice}:${freeToPlay}:${onlyHighRated}`
+    const cacheKey = `games:${platforms.join(",")}:${stores.join(",")}:${genres.join(",")}:${maxPrice}:${freeToPlay}:${onlyHighRated}:${startYear}:${endYear}`
 
     // Check cache first
-    let games = gameCache.get(cacheKey)
+    let games = cache.get(cacheKey, { allowStale: true })
 
-    if (!games) {
+    if (games) {
+      if (cache.getRemainingTTL(cacheKey) <= 0) {
+        revalidate(cacheKey, apiParams)
+      }
+    } else {
       // Build RAWG API parameters
       const apiParams: any = {}
 
@@ -166,21 +151,40 @@ export async function GET(request: NextRequest) {
         apiParams.genres = getRawgGenreIds(genres as any)
       }
 
+      if (startYear && endYear) {
+        apiParams.dates = `${startYear}-01-01,${endYear}-12-31`
+      }
+
       games = await searchGamesWithFallbacks(apiParams)
-      gameCache.set(cacheKey, games, 15)
+      cache.set(cacheKey, games)
     }
 
     const filteredGames = filterGames(games, {
       platforms,
       stores,
       genres,
-      maxPrice: maxPrice ? Number.parseFloat(maxPrice) : undefined,
+      maxPrice: maxPrice ? Math.min(Number.parseFloat(maxPrice), 125) : undefined,
       freeToPlay,
       onlyHighRated,
       minRating: 3.0,
     })
 
     if (filteredGames.length === 0) {
+      if (freeToPlay) {
+        const f2pAll = filterGames(await searchGamesWithFallbacks({}), {
+          freeToPlay: true,
+          stores,
+        })
+        if (f2pAll.length > 0) {
+          const fallback = selectGameWithStrategy(f2pAll, seed, strategy)
+          return NextResponse.json({
+            game: fallback.game,
+            seed: fallback.usedSeed,
+            strategy: fallback.strategy,
+            total: f2pAll.length,
+          })
+        }
+      }
       return NextResponse.json({
         error: "Keine Spiele gefunden. Versuche weniger spezifische Filter.",
         games: [],
@@ -192,7 +196,7 @@ export async function GET(request: NextRequest) {
       platforms,
       stores,
       genres,
-      maxPrice: maxPrice ? Number.parseFloat(maxPrice) : undefined,
+      maxPrice: maxPrice ? Math.min(Number.parseFloat(maxPrice), 125) : undefined,
       freeToPlay,
       onlyHighRated,
     })

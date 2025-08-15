@@ -1,7 +1,7 @@
 {
-  "name": "Gaming Finder Configuration",
+  "name": "tellmenext.games Configuration",
   "version": "1.0.0",
-  "description": "Centralized configuration for the Gaming Finder application",
+  "description": "Centralized configuration for the tellmenext.games application",
   "configurations": {
     "app": "config/app.config.ts",
     "api": "config/api.config.ts",
@@ -10,7 +10,7 @@
     "game": "config/game.config.ts"
   },
   "setup": {
-    "required_env_vars": ["RAWG_API_KEY"],
+    "required_env_vars": ["RAWG_KEY"],
     "optional_env_vars": ["STEAM_API_KEY", "NEXT_PUBLIC_BASE_URL"],
     "config_validation": "lib/config-utils.ts"
   },

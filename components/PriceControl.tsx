@@ -37,7 +37,7 @@ export function PriceControl({ maxPrice, freeToPlay, onMaxPriceChange, onFreeToP
             <Slider
               value={[maxPrice]}
               onValueChange={(value) => onMaxPriceChange(value[0])}
-              max={100}
+              max={125}
               min={5}
               step={5}
               className="w-full"

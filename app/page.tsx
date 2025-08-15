@@ -9,7 +9,7 @@ import { HistoryStrip, addToHistory } from "@/components/HistoryStrip"
 import { ShareDialog } from "@/components/ShareDialog"
 import { EmptyState } from "@/components/EmptyState"
 import { ErrorState } from "@/components/ErrorState"
-import { GameCardSkeleton } from "@/components/Skeletons"
+import { LoadingSpinner } from "@/components/LoadingSpinner"
 import { useToast } from "@/hooks/use-toast"
 import { useLanguage } from "@/hooks/useLanguage"
 import { decodeUrlState, createPermalink } from "@/lib/url-state"
@@ -37,6 +37,7 @@ export default function HomePage() {
     maxPrice: 60,
     freeToPlay: false,
     onlyHighRated: false,
+    years: [2000, 2025] as [number, number],
   })
 
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function HomePage() {
         maxPrice: urlState.maxPrice || prev.maxPrice,
         freeToPlay: urlState.freeToPlay || prev.freeToPlay,
         onlyHighRated: urlState.onlyHighRated || prev.onlyHighRated,
+        years: urlState.years || prev.years,
       }))
 
       if (urlState.seed && urlState.gameId) {
@@ -73,6 +75,8 @@ export default function HomePage() {
       if (filters.freeToPlay) params.append("freeToPlay", "true")
       else params.append("maxPrice", filters.maxPrice.toString())
       if (filters.onlyHighRated) params.append("onlyHighRated", "true")
+      params.append("startYear", filters.years[0].toString())
+      params.append("endYear", filters.years[1].toString())
 
       const response = await fetch(`/api/games?${params}`)
       const data = await response.json()
@@ -136,6 +140,8 @@ export default function HomePage() {
       if (filters.freeToPlay) params.append("freeToPlay", "true")
       else params.append("maxPrice", filters.maxPrice.toString())
       if (filters.onlyHighRated) params.append("onlyHighRated", "true")
+      params.append("startYear", filters.years[0].toString())
+      params.append("endYear", filters.years[1].toString())
 
       const response = await fetch(`/api/games?${params}`)
       const data = await response.json()
@@ -170,6 +176,8 @@ export default function HomePage() {
       if (filters.freeToPlay) params.append("freeToPlay", "true")
       else params.append("maxPrice", filters.maxPrice.toString())
       if (filters.onlyHighRated) params.append("onlyHighRated", "true")
+      params.append("startYear", filters.years[0].toString())
+      params.append("endYear", filters.years[1].toString())
 
       const response = await fetch(`/api/games?${params}`)
       const data = await response.json()
@@ -194,30 +202,29 @@ export default function HomePage() {
 
   const handleOpenStore = (game: Game) => {
     if (game.stores && game.stores.length > 0) {
-      const store = game.stores[0].store
-      let storeUrl = ""
+      const entry = game.stores[0]
+      const store = entry.store
+      const title = encodeURIComponent(game.name)
+      let storeUrl = entry.url || ""
 
       switch (store.name.toLowerCase()) {
         case "steam":
-          storeUrl = `https://store.steampowered.com/search/?term=${encodeURIComponent(game.name)}`
+          storeUrl = entry.url || `https://store.steampowered.com/search/?term=${title}`
           break
         case "epic games store":
-          storeUrl = `https://store.epicgames.com/en-US/browse?q=${encodeURIComponent(game.name)}`
+          storeUrl = entry.url || `https://store.epicgames.com/store/en-US/search?q=${title}`
           break
-        case "gog":
-          storeUrl = `https://www.gog.com/games?search=${encodeURIComponent(game.name)}`
+        case "ea app":
+        case "origin":
+          storeUrl =
+            entry.url ||
+            (store.slug ? `https://www.ea.com/games/library/${store.slug}` : `https://www.ea.com/search?q=${title}`)
           break
-        case "microsoft store":
-          storeUrl = `https://www.microsoft.com/store/search?q=${encodeURIComponent(game.name)}`
-          break
-        case "playstation store":
-          storeUrl = `https://store.playstation.com/search/${encodeURIComponent(game.name)}`
-          break
-        case "nintendo eshop":
-          storeUrl = `https://www.nintendo.com/search/?q=${encodeURIComponent(game.name)}`
+        case "ubisoft connect":
+          storeUrl = entry.url || `https://store.ubisoft.com/search?q=${title}`
           break
         default:
-          storeUrl = `https://www.google.com/search?q=${encodeURIComponent(game.name + " buy game")}`
+          storeUrl = entry.url || `https://www.google.com/search?q=${title}`
       }
 
       window.open(storeUrl, "_blank", "noopener,noreferrer")
@@ -320,7 +327,7 @@ export default function HomePage() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <GameCardSkeleton />
+                <LoadingSpinner />
               </motion.div>
             ) : error ? (
               <motion.div

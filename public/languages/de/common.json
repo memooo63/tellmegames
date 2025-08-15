@@ -1,6 +1,6 @@
 {
   "nav": {
-    "title": "Gaming Finder",
+    "title": "tellmenext.games",
     "subtitle": "Entdecke dein nächstes Lieblingsspiel"
   },
   "filters": {
@@ -26,12 +26,16 @@
       "freeToPlay": "Nur kostenlose Spiele",
       "currency": "€"
     },
+    "year": {
+      "label": "Erscheinungsjahr",
+      "range": "{{start}}–{{end}}"
+    },
     "quality": {
       "label": "Nur gut bewertete Spiele (≥ 75%)",
       "tooltip": "Zeigt nur Spiele mit hoher Bewertung"
     },
     "button": {
-      "find": "Zufälliges Spiel finden",
+      "find": "Nächstes Spiel finden",
       "loading": "Würfelt...",
       "noFilters": "Bitte wähle mindestens einen Filter"
     }
@@ -39,7 +43,8 @@
   "game": {
     "price": {
       "free": "Kostenlos",
-      "freeToPlay": "Free-to-Play"
+      "freeToPlay": "Free-to-Play",
+      "actual": "Tatsächlicher Preis: {{price}}"
     },
     "rating": "Bewertung",
     "metacritic": "Metacritic",

@@ -8,22 +8,22 @@ import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Gaming Finder – Entdecke dein nächstes Lieblingsspiel",
+  title: "tellmenext.games – Entdecke dein nächstes Lieblingsspiel",
   description:
     "Wähle Plattform, Genre und Preis. Wir würfeln den perfekten Titel für dich. Kostenlos und ohne Tracking.",
   generator: "v0.app",
   keywords: "Spiele, Gaming, Zufallsgenerator, Spielefinder, kostenlos",
-  authors: [{ name: "Gaming Finder Team" }],
+  authors: [{ name: "tellmenext.games" }],
   robots: "index, follow",
   openGraph: {
-    title: "Gaming Finder – Entdecke dein nächstes Lieblingsspiel",
+    title: "tellmenext.games – Entdecke dein nächstes Lieblingsspiel",
     description: "Wähle Plattform, Genre und Preis. Wir würfeln den perfekten Titel für dich.",
     type: "website",
     locale: "de_DE",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Gaming Finder – Entdecke dein nächstes Lieblingsspiel",
+    title: "tellmenext.games – Entdecke dein nächstes Lieblingsspiel",
     description: "Wähle Plattform, Genre und Preis. Wir würfeln den perfekten Titel für dich.",
   },
 }
