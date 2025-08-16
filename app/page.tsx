@@ -200,6 +200,29 @@ export default function HomePage() {
     setShareDialogOpen(true)
   }
 
+  function storeNameToSlug(name: string): StoreSlug {
+    switch (name) {
+      case "Steam":
+        return "steam"
+      case "Epic Games Store":
+        return "epic-games"
+      case "GOG":
+        return "gog"
+      case "PlayStation Store":
+        return "playstation-store"
+      case "Microsoft Store":
+        return "microsoft-store"
+      case "Nintendo eShop":
+        return "nintendo"
+      case "EA App":
+        return "ea-app"
+      case "Ubisoft Store":
+        return "ubisoft-store"
+      default:
+        return "steam"
+    }
+  }
+
   const handleSelectFromHistory = (game: Game) => {
     setCurrentGame(game)
     setError(null)
