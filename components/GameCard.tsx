@@ -15,7 +15,7 @@ import { buildStoreLink, type StoreSlug } from "@/lib/storeLinks"
 export interface Game {
   id: number
   name: string
-  background_image: string
+  background_image?: string | null
   rating: number
   released: string
   genres: Array<{ id: number; name: string }>
