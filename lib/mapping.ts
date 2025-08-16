@@ -1,7 +1,7 @@
 export const PLATFORM_MAPPING = {
   PC: { rawg: "4", steam: true, epic: true, gog: true },
-  "Xbox One": { rawg: "1", microsoft: true },
-  "Xbox Series": { rawg: "186,187", microsoft: true },
+  "Xbox One": { rawg: "11", microsoft: true },
+  "Xbox Series": { rawg: "186", microsoft: true },
   "PlayStation 4": { rawg: "18", playstation: true },
   "PlayStation 5": { rawg: "187", playstation: true },
   "Nintendo Switch": { rawg: "7", nintendo: true },
