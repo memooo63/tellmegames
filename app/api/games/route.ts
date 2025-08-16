@@ -2,21 +2,52 @@ import { type NextRequest, NextResponse } from "next/server"
 import { searchGames } from "@/lib/api/rawg"
 import { selectGameWithStrategy, generateAlternatives, decodeSeed, generateSeed } from "@/lib/random"
 import { LRUCache } from "lru-cache"
-
-const cache = new LRUCache<string, any>({
-  max: 100,
-  ttl: 1000 * 60 * 10,
-  allowStale: true,
-})
 import { getRawgPlatformIds, getRawgStoreIds, getRawgGenreIds } from "@/lib/mapping"
 import { isPriceInRange } from "@/lib/price"
 import { matchGamesToPreferences } from "@/lib/game-matcher"
-import fallbackGames from "@/lib/fallback-games.json"
+import fallbackGames from "@/data/games-fallback.json"
+
+const memoryCache = new LRUCache<string, { games: any[]; fallback: boolean }>({
+  max: 100,
+  ttl: 1000 * 60 * 15,
+  allowStale: true,
+})
+let Redis: any
+if (process.env.REDIS_URL) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  Redis = require("ioredis")
+}
+const redis = process.env.REDIS_URL && Redis ? new Redis(process.env.REDIS_URL) : null
+const inFlight = new Map<string, Promise<{ games: any[]; fallback: boolean }>>()
+
+function keyFromObj(searchParams: URLSearchParams) {
+  const obj = Object.fromEntries([...searchParams.entries()].sort()) as Record<string, any>
+  delete obj.seed
+  delete obj.strategy
+  return JSON.stringify(obj)
+}
+
+async function fetchAndCache(key: string, params: any) {
+  let promise = inFlight.get(key)
+  if (!promise) {
+    promise = searchGamesWithFallbacks(params)
+      .then((res) => {
+        memoryCache.set(key, res)
+        if (redis) {
+          redis.set(key, JSON.stringify(res), "EX", 900).catch(() => {})
+        }
+        return res
+      })
+      .finally(() => {
+        inFlight.delete(key)
+      })
+    inFlight.set(key, promise)
+  }
+  return promise
+}
 
 function revalidate(key: string, params: any) {
-  searchGamesWithFallbacks(params)
-    .then(({ games }) => cache.set(key, games))
-    .catch((err) => console.error("revalidate failed", err))
+  fetchAndCache(key, params).catch((err) => console.error("revalidate failed", err))
 }
 
 function filterGames(
@@ -124,11 +155,22 @@ async function searchGamesWithFallbacks(params: any): Promise<{ games: any[]; fa
     games = [...games, ...fallbackGames]
   }
 
+  games = games.map((g) => ({
+    ...g,
+    steamAppId:
+      g.stores &&
+      (() => {
+        const url = g.stores.find((s: any) => s.store?.slug === "steam")?.url
+        const match = url?.match(/\/app\/(\d+)/)
+        return match ? Number(match[1]) : undefined
+      })(),
+  }))
+
   return { games, fallback }
 }
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url)
+export async function GET(req: NextRequest) {
+  const searchParams = req.nextUrl.searchParams
   const platforms = searchParams.get("platforms")?.split(",") || []
   const stores = searchParams.get("stores")?.split(",") || []
   const genres = searchParams.get("genres")?.split(",") || []
@@ -141,12 +183,12 @@ export async function GET(request: NextRequest) {
   const startYear = searchParams.get("startYear")
   const endYear = searchParams.get("endYear")
 
+  const cacheKey = keyFromObj(searchParams)
+  let source: "hit" | "redis" | "miss" = "miss"
+
   try {
     const seed = seedParam ? decodeSeed(seedParam) : generateSeed()
 
-    const cacheKey = `games:${platforms.join(",")}:${stores.join(",")}:${genres.join(",")}:${maxPrice}:${freeToPlay}:${onlyHighRated}:${startYear}:${endYear}`
-
-    // Build RAWG API parameters
     const apiParams: any = {}
     if (platforms.length > 0) {
       apiParams.platforms = getRawgPlatformIds(platforms as any)
@@ -161,24 +203,31 @@ export async function GET(request: NextRequest) {
       apiParams.dates = `${startYear}-01-01,${endYear}-12-31`
     }
 
-    // Check cache first
-    let gamesData = cache.get(cacheKey, { allowStale: true }) as any[] | undefined
-    let fallbackUsed = false
-
-    if (gamesData) {
-      if (cache.getRemainingTTL(cacheKey) <= 0) {
+    let result = memoryCache.get(cacheKey)
+    if (result) {
+      source = "hit"
+      revalidate(cacheKey, apiParams)
+    } else if (redis) {
+      const redisValue = await redis.get(cacheKey)
+      if (redisValue) {
+        result = JSON.parse(redisValue)
+        source = "redis"
+        memoryCache.set(cacheKey, result)
         revalidate(cacheKey, apiParams)
       }
-    } else {
-      const result = await searchGamesWithFallbacks(apiParams)
-      gamesData = result.games
-      fallbackUsed = result.fallback
-      cache.set(cacheKey, gamesData)
     }
 
-    // Retry without store filter if no results
+    if (!result) {
+      result = await fetchAndCache(cacheKey, apiParams)
+    }
+
+    let gamesData = result.games
+    let fallbackUsed = result.fallback
+
     if (gamesData.length === 0 && stores.length > 0) {
-      const retry = await searchGamesWithFallbacks({ ...apiParams, stores: undefined })
+      const paramsNoStore = new URLSearchParams(searchParams)
+      paramsNoStore.delete("stores")
+      const retry = await fetchAndCache(keyFromObj(paramsNoStore), { ...apiParams, stores: undefined })
       gamesData = retry.games
       fallbackUsed = fallbackUsed || retry.fallback
     }
@@ -195,6 +244,11 @@ export async function GET(request: NextRequest) {
       minRating: 3.0,
     })
 
+    const headers = {
+      "Cache-Control": "s-maxage=300, stale-while-revalidate=600",
+      "x-cache": source,
+    }
+
     if (filteredGames.length === 0) {
       if (freeToPlay) {
         const f2pAll = filterGames((await searchGamesWithFallbacks({})).games, {
@@ -203,20 +257,26 @@ export async function GET(request: NextRequest) {
         })
         if (f2pAll.length > 0) {
           const fallback = selectGameWithStrategy(f2pAll, seed, strategy)
-          return NextResponse.json({
-            game: fallback.game,
-            seed: fallback.usedSeed,
-            strategy: fallback.strategy,
-            total: f2pAll.length,
-          })
+          return NextResponse.json(
+            {
+              game: fallback.game,
+              seed: fallback.usedSeed,
+              strategy: fallback.strategy,
+              total: f2pAll.length,
+            },
+            { headers },
+          )
         }
       }
-      return NextResponse.json({
-        error: "Keine Spiele gefunden. Versuche weniger spezifische Filter.",
-        games: [],
-        total: 0,
-        fallback: fallbackUsed,
-      })
+      return NextResponse.json(
+        {
+          error: "Keine Spiele gefunden. Versuche weniger spezifische Filter.",
+          games: [],
+          total: 0,
+          fallback: fallbackUsed,
+        },
+        { headers },
+      )
     }
 
     const matchedGames = matchGamesToPreferences(filteredGames, {
@@ -230,7 +290,7 @@ export async function GET(request: NextRequest) {
 
     const selection = selectGameWithStrategy(matchedGames, seed, strategy)
 
-    const result: any = {
+    const body: any = {
       game: selection.game,
       seed: selection.usedSeed,
       strategy: selection.strategy,
@@ -240,10 +300,10 @@ export async function GET(request: NextRequest) {
 
     if (getAlternatives && selection.game) {
       const alternatives = generateAlternatives(matchedGames, selection.game, seed, 3)
-      result.alternatives = alternatives
+      body.alternatives = alternatives
     }
 
-    return NextResponse.json(result)
+    return NextResponse.json(body, { headers })
   } catch (error) {
     console.error("Games API error:", error)
     return NextResponse.json(
@@ -252,7 +312,7 @@ export async function GET(request: NextRequest) {
         games: [],
         total: 0,
       },
-      { status: 500 },
+      { status: 500, headers: { "x-cache": source } },
     )
   }
 }

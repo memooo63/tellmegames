@@ -23,9 +23,10 @@ const RAWG_API_KEY = process.env.RAWG_KEY || ""
 const API_KEY_MISSING_ERROR = "RAWG API key is not configured"
 const BASE_URL = "https://api.rawg.io/api"
 
+const REQUESTS_PER_MINUTE = Number(process.env.RAWG_RPM || 20)
 const limiter = new Bottleneck({
-  reservoir: 20,
-  reservoirRefreshAmount: 20,
+  reservoir: REQUESTS_PER_MINUTE,
+  reservoirRefreshAmount: REQUESTS_PER_MINUTE,
   reservoirRefreshInterval: 60 * 1000,
 })
 
