@@ -81,3 +81,27 @@ export async function getGameDetails(id: number): Promise<RAWGGame> {
     throw error
   }
 }
+
+export async function getGameStores(
+  id: number,
+): Promise<Array<{ store: { id: number; name: string; slug: string }; url?: string }>> {
+  if (!RAWG_API_KEY) {
+    throw new Error(API_KEY_MISSING_ERROR)
+  }
+
+  try {
+    const response = await limiter.schedule(() =>
+      fetch(`${BASE_URL}/games/${id}/stores?key=${RAWG_API_KEY}`),
+    )
+
+    if (!response.ok) {
+      throw new Error(`RAWG API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.results || []
+  } catch (error) {
+    console.error("RAWG API error:", error)
+    throw error
+  }
+}
