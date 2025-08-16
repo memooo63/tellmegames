@@ -124,6 +124,17 @@ async function searchGamesWithFallbacks(params: any): Promise<{ games: any[]; fa
     games = [...games, ...fallbackGames]
   }
 
+  games = games.map((g) => ({
+    ...g,
+    steamAppId:
+      g.stores &&
+      (() => {
+        const url = g.stores.find((s: any) => s.store?.slug === "steam")?.url
+        const match = url?.match(/\/app\/(\d+)/)
+        return match ? Number(match[1]) : undefined
+      })(),
+  }))
+
   return { games, fallback }
 }
 

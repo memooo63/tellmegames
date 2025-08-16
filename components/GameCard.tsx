@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Star, Calendar, ExternalLink, Shuffle, Share2, Dice6 } from "lucide-react"
 import { useLanguage } from "@/hooks/useLanguage"
 import Image from "next/image"
@@ -15,7 +16,7 @@ import { buildStoreLink, type StoreSlug } from "@/lib/storeLinks"
 export interface Game {
   id: number
   name: string
-  background_image: string
+  background_image?: string | null
   rating: number
   released: string
   genres: Array<{ id: number; name: string }>
@@ -26,19 +27,19 @@ export interface Game {
   currency?: string
   free_to_play?: boolean
   weight?: number
+  steamAppId?: number
 }
 
 interface GameCardProps {
   game: Game
   seed?: number
   strategy?: string
-  preferredStore?: StoreSlug
   onReroll?: () => void
   onAlternative?: () => void
   onShare?: (game: Game, seed?: number) => void
 }
 
-export function GameCard({ game, seed, strategy, preferredStore, onReroll, onAlternative, onShare }: GameCardProps) {
+export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShare }: GameCardProps) {
   const { t, language } = useLanguage()
   const [isSharing, setIsSharing] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -77,6 +78,19 @@ export function GameCard({ game, seed, strategy, preferredStore, onReroll, onAlt
     } finally {
       setIsSharing(false)
     }
+  }
+
+  const storeOptions =
+    game.stores && game.stores.length > 0
+      ? game.stores
+      : [{ store: { id: 0, name: "Steam", slug: "steam" }, url: undefined }]
+
+  const toSlug = (s: { store: { slug?: string; name: string } }) =>
+    (s.store.slug || s.store.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$|/g, "")) as StoreSlug
+
+  const openStore = (slug?: StoreSlug) => {
+    const url = buildStoreLink(game.name, game.stores as any, slug, game.steamAppId)
+    window.open(url, "_blank", "noopener,noreferrer")
   }
 
   return (
@@ -331,22 +345,30 @@ export function GameCard({ game, seed, strategy, preferredStore, onReroll, onAlt
                 </motion.div>
               )}
 
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400 }}
-              >
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    const url = buildStoreLink(game.name, game.stores, preferredStore)
-                    window.open(url, "_blank", "noopener,noreferrer")
-                  }}
-                >
-                  <ExternalLink className="h-4 w-4 mr-1" />
-                  {t("game.actions.openStore")}
-                </Button>
-              </motion.div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                  >
+                    <Button size="sm">
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      {t("game.actions.openStore")}
+                    </Button>
+                  </motion.div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {storeOptions.map((s) => {
+                    const slug = toSlug(s)
+                    return (
+                      <DropdownMenuItem key={slug} onSelect={() => openStore(slug)}>
+                        {s.store.name}
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </motion.div>
         </CardContent>

@@ -14,7 +14,6 @@ import { useToast } from "@/hooks/use-toast"
 import { useLanguage } from "@/hooks/useLanguage"
 import { decodeUrlState, createPermalink } from "@/lib/url-state"
 import { generateSeed } from "@/lib/random"
-import type { StoreSlug } from "@/lib/storeLinks"
 
 export default function HomePage() {
   const searchParams = useSearchParams()
@@ -315,7 +314,6 @@ export default function HomePage() {
                 game={currentGame}
                 seed={currentSeed || undefined}
                 strategy={currentStrategy}
-                preferredStore={filters.stores[0] as StoreSlug | undefined}
                 onReroll={handleReroll}
                 onAlternative={handleAlternative}
                 onShare={handleShare}
