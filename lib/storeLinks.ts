@@ -1,56 +1,38 @@
-export type StoreSlug = "steam" | "epic" | "ea" | "ubisoft"
+export type StoreSlug = "steam"|"epic-games"|"gog"|"playstation-store"|"xbox-store"|"nintendo"|"ea-app"|"ubisoft-store"|"microsoft-store";
 
-function slugifyTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-}
+export type GameStore = { store:{slug:string,name:string}, url?:string|null }
+export function buildStoreLink(title:string, stores?:GameStore[], preferred?:StoreSlug, steamAppId?:number){
+  const q = encodeURIComponent(title)
+  const find = (s?:StoreSlug)=>stores?.find(x => normalizeSlug(x.store.slug)===s);
+  const s = preferred && find(preferred) || stores?.find(x=>x.url)
+  if (preferred==="steam" && (steamAppId||extractSteamAppId(stores))) {
+    const id = steamAppId || extractSteamAppId(stores)!
+    return `https://store.steampowered.com/app/${id}/${slugify(title)}/`
+  }
+  if (s?.url) return s.url
+  if (preferred) return search(preferred,q)
+  return search("steam",q)
 
-export function buildStoreLink(
-  title: string,
-  stores: Array<{ store: { slug?: string; name: string }; url?: string }> = [],
-  preferredStore?: StoreSlug,
-): string {
-  const encodedTitle = encodeURIComponent(title)
-  const slugTitle = slugifyTitle(title)
-
-  const findStore = (slug: StoreSlug) =>
-    stores.find((s) =>
-      s.store.slug?.toLowerCase() === slug || s.store.name.toLowerCase().includes(slug),
-    )
-
-  const buildLink = (slug: StoreSlug, entry?: any): string => {
-    switch (slug) {
-      case "steam": {
-        const appIdMatch = entry?.url?.match(/app\/(\d+)/)
-        if (appIdMatch) {
-          return `https://store.steampowered.com/app/${appIdMatch[1]}/${slugTitle}/`
-        }
-        return `https://store.steampowered.com/search/?term=${encodedTitle}`
-      }
-      case "epic":
-        return entry?.url || `https://store.epicgames.com/en-US/browse?q=${encodedTitle}`
-      case "ea":
-        return entry?.url || `https://www.ea.com/search?q=${encodedTitle}`
-      case "ubisoft":
-        return entry?.url || `https://store.ubisoft.com/search?q=${encodedTitle}`
-      default:
-        return `https://store.steampowered.com/search/?term=${encodedTitle}`
+  function extractSteamAppId(arr?:GameStore[]){
+    const u = arr?.find(x=>normalizeSlug(x.store.slug)==="steam")?.url || ""
+    const m = u.match(/\/app\/(\d+)/); return m?Number(m[1]):undefined
+  }
+  function normalizeSlug(x:string):StoreSlug {
+    if (x==="xbox-store"||x==="microsoft-store") return "microsoft-store"
+    if (x==="epic-games-store") return "epic-games"
+    return x as StoreSlug
+  }
+  function search(slug:StoreSlug,q:string){
+    switch(slug){
+      case "steam": return `https://store.steampowered.com/search/?term=${q}`
+      case "epic-games": return `https://store.epicgames.com/en-US/browse?q=${q}`
+      case "gog": return `https://www.gog.com/en/games?query=${q}`
+      case "playstation-store": return `https://store.playstation.com/en-us/search/${q}`
+      case "microsoft-store": return `https://www.xbox.com/en-US/search?q=${q}`
+      case "nintendo": return `https://www.nintendo.com/search/#q=${q}`
+      case "ea-app": return `https://www.ea.com/search?q=${q}`
+      case "ubisoft-store": return `https://store.ubisoft.com/search?q=${q}`
     }
   }
-
-  if (preferredStore) {
-    const entry = findStore(preferredStore)
-    return buildLink(preferredStore, entry)
-  }
-
-  for (const slug of ["steam", "epic", "ea", "ubisoft"] as StoreSlug[]) {
-    const entry = findStore(slug)
-    if (entry) {
-      return buildLink(slug, entry)
-    }
-  }
-
-  return buildLink("steam")
+  function slugify(s:string){return s.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"")}
 }

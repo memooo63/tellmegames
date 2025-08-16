@@ -26,6 +26,7 @@ export interface Game {
   currency?: string
   free_to_play?: boolean
   weight?: number
+  steamAppId?: number
 }
 
 interface GameCardProps {
@@ -339,7 +340,12 @@ export function GameCard({ game, seed, strategy, preferredStore, onReroll, onAlt
                 <Button
                   size="sm"
                   onClick={() => {
-                    const url = buildStoreLink(game.name, game.stores, preferredStore)
+                    const url = buildStoreLink(
+                      game.name,
+                      game.stores as any,
+                      preferredStore,
+                      game.steamAppId,
+                    )
                     window.open(url, "_blank", "noopener,noreferrer")
                   }}
                 >
