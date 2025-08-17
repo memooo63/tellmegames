@@ -90,6 +90,7 @@ export function validateAndMapParams(q: Record<string, any>) {
     uplay: { slug: "ubisoft-store", name: "Ubisoft Store" },
   }
 
+
   const genreMap: Record<string, string> = {}
   Object.entries(GENRE_MAPPING).forEach(([name, { rawg }]) => {
     genreMap[name.toLowerCase()] = rawg
@@ -132,6 +133,7 @@ export function validateAndMapParams(q: Record<string, any>) {
       }
     })
     if (slugs.length > 0) api.stores = slugs.join(",")
+
   }
 
   if (q.genres) {
