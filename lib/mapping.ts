@@ -14,6 +14,8 @@ export const STORE_MAPPING = {
   "Microsoft Store": { rawg: "3", platform_support: ["PC", "Xbox One", "Xbox Series"] },
   "PlayStation Store": { rawg: "2", platform_support: ["PlayStation 4", "PlayStation 5"] },
   "Nintendo eShop": { rawg: "6", platform_support: ["Nintendo Switch"] },
+  "EA App": { rawg: "8", platform_support: ["PC"] },
+  "Ubisoft Store": { rawg: "13", platform_support: ["PC"] },
 } as const
 
 export const GENRE_MAPPING = {
@@ -55,24 +57,39 @@ export function getRawgGenreIds(genres: Genre[]): string {
 }
 
 export function validateAndMapParams(q: Record<string, any>) {
-  const platformMap: Record<string, string> = {
-    PC: "4",
-    "Xbox One": "11",
-    "Xbox Series X|S": "186",
-    "PS4": "18",
-    "PS5": "187",
+  const platformMap: Record<string, { id: string; name: string }> = {
+    pc: { id: "4", name: "PC" },
+    "xbox one": { id: "11", name: "Xbox One" },
+    "xbox series": { id: "186", name: "Xbox Series X|S" },
+    "xbox series x|s": { id: "186", name: "Xbox Series X|S" },
+    ps4: { id: "18", name: "PlayStation 4" },
+    "playstation 4": { id: "18", name: "PlayStation 4" },
+    ps5: { id: "187", name: "PlayStation 5" },
+    "playstation 5": { id: "187", name: "PlayStation 5" },
+    "nintendo switch": { id: "7", name: "Nintendo Switch" },
   }
 
-  const allowedStores = [
-    "steam",
-    "epic-games",
-    "gog",
-    "playstation-store",
-    "microsoft-store",
-    "ea-app",
-    "ubisoft-store",
-    "nintendo",
-  ]
+  const storeMap: Record<string, { slug: string; name: string }> = {
+    steam: { slug: "steam", name: "Steam" },
+    "epic games store": { slug: "epic-games", name: "Epic Games Store" },
+    "epic-games": { slug: "epic-games", name: "Epic Games Store" },
+    gog: { slug: "gog", name: "GOG" },
+    "microsoft store": { slug: "microsoft-store", name: "Microsoft Store" },
+    "microsoft-store": { slug: "microsoft-store", name: "Microsoft Store" },
+    "xbox store": { slug: "microsoft-store", name: "Microsoft Store" },
+    "playstation store": { slug: "playstation-store", name: "PlayStation Store" },
+    "playstation-store": { slug: "playstation-store", name: "PlayStation Store" },
+    "ps store": { slug: "playstation-store", name: "PlayStation Store" },
+    "nintendo eshop": { slug: "nintendo", name: "Nintendo eShop" },
+    nintendo: { slug: "nintendo", name: "Nintendo eShop" },
+    "ea app": { slug: "ea-app", name: "EA App" },
+    "ea-app": { slug: "ea-app", name: "EA App" },
+    origin: { slug: "ea-app", name: "EA App" },
+    "ubisoft store": { slug: "ubisoft-store", name: "Ubisoft Store" },
+    "ubisoft-store": { slug: "ubisoft-store", name: "Ubisoft Store" },
+    uplay: { slug: "ubisoft-store", name: "Ubisoft Store" },
+  }
+
 
   const genreMap: Record<string, string> = {}
   Object.entries(GENRE_MAPPING).forEach(([name, { rawg }]) => {
@@ -92,10 +109,10 @@ export function validateAndMapParams(q: Record<string, any>) {
     const vals = String(q.platforms).split(",")
     const ids: string[] = []
     vals.forEach((p) => {
-      const id = platformMap[p]
-      if (id) {
-        ids.push(id)
-        filters.platforms.push(p)
+      const m = platformMap[p.toLowerCase()]
+      if (m) {
+        ids.push(m.id)
+        filters.platforms.push(m.name)
       } else {
         console.warn("[WARN] invalid platform", p)
       }
@@ -105,15 +122,18 @@ export function validateAndMapParams(q: Record<string, any>) {
 
   if (q.stores) {
     const vals = String(q.stores).split(",")
-    const valid = vals.filter((s) => {
-      const ok = allowedStores.includes(s)
-      if (!ok) console.warn("[WARN] invalid store", s)
-      return ok
+    const slugs: string[] = []
+    vals.forEach((s) => {
+      const m = storeMap[s.toLowerCase()]
+      if (m) {
+        slugs.push(m.slug)
+        filters.stores.push(m.name)
+      } else {
+        console.warn("[WARN] invalid store", s)
+      }
     })
-    if (valid.length > 0) {
-      api.stores = valid.join(",")
-      filters.stores = valid
-    }
+    if (slugs.length > 0) api.stores = slugs.join(",")
+
   }
 
   if (q.genres) {
