@@ -53,3 +53,100 @@ export function getRawgStoreIds(stores: Store[]): string {
 export function getRawgGenreIds(genres: Genre[]): string {
   return genres.map((genre) => GENRE_MAPPING[genre].rawg).join(",")
 }
+
+export function validateAndMapParams(q: Record<string, any>) {
+  const platformMap: Record<string, string> = {
+    PC: "4",
+    "Xbox One": "11",
+    "Xbox Series X|S": "186",
+    "PS4": "18",
+    "PS5": "187",
+  }
+
+  const allowedStores = [
+    "steam",
+    "epic-games",
+    "gog",
+    "playstation-store",
+    "microsoft-store",
+    "ea-app",
+    "ubisoft-store",
+    "nintendo",
+  ]
+
+  const genreMap: Record<string, string> = {}
+  Object.entries(GENRE_MAPPING).forEach(([name, { rawg }]) => {
+    genreMap[name.toLowerCase()] = rawg
+  })
+
+  const api: Record<string, any> = {}
+  const filters: Record<string, any> = {
+    platforms: [] as string[],
+    stores: [] as string[],
+    genres: [] as string[],
+    priceMax: undefined as number | undefined,
+    dates: undefined as string | undefined,
+  }
+
+  if (q.platforms) {
+    const vals = String(q.platforms).split(",")
+    const ids: string[] = []
+    vals.forEach((p) => {
+      const id = platformMap[p]
+      if (id) {
+        ids.push(id)
+        filters.platforms.push(p)
+      } else {
+        console.warn("[WARN] invalid platform", p)
+      }
+    })
+    if (ids.length > 0) api.platforms = ids.join(",")
+  }
+
+  if (q.stores) {
+    const vals = String(q.stores).split(",")
+    const valid = vals.filter((s) => {
+      const ok = allowedStores.includes(s)
+      if (!ok) console.warn("[WARN] invalid store", s)
+      return ok
+    })
+    if (valid.length > 0) {
+      api.stores = valid.join(",")
+      filters.stores = valid
+    }
+  }
+
+  if (q.genres) {
+    const vals = String(q.genres).split(",")
+    const ids: string[] = []
+    vals.forEach((g) => {
+      const id = genreMap[g.toLowerCase()]
+      if (id) {
+        ids.push(id)
+        filters.genres.push(g)
+      } else {
+        console.warn("[WARN] invalid genre", g)
+      }
+    })
+    if (ids.length > 0) api.genres = ids.join(",")
+  }
+
+  if (q.startYear && q.endYear) {
+    filters.dates = `${q.startYear}-01-01,${q.endYear}-12-31`
+    api.dates = filters.dates
+  }
+
+  if (q.maxPrice) {
+    const price = Math.min(Number.parseFloat(q.maxPrice), 125)
+    if (!Number.isNaN(price)) {
+      filters.priceMax = price
+      api.priceMax = price
+    }
+  }
+
+  if (q.freeToPlay === "true") {
+    api.tags = "free-to-play"
+  }
+
+  return { api, filters }
+}
