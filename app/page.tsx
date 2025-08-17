@@ -14,12 +14,14 @@ import { useToast } from "@/hooks/use-toast"
 import { useLanguage } from "@/hooks/useLanguage"
 import { decodeUrlState, createPermalink } from "@/lib/url-state"
 import { generateSeed } from "@/lib/random"
+import { useDebug } from "@/components/DebugPanel"
 
 export default function HomePage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { toast } = useToast()
   const { t, isLoading: isLangLoading } = useLanguage()
+  const { setVisible } = useDebug()
 
   const [currentGame, setCurrentGame] = useState<Game | null>(null)
   const [currentSeed, setCurrentSeed] = useState<number | null>(null)
@@ -329,7 +331,15 @@ export default function HomePage() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
               >
-                <ErrorState message={error} onRetry={handleRetry} />
+                <ErrorState
+                  message={error}
+                  onRetry={handleRetry}
+                  onDebug={
+                    error === t("errors.noGames")
+                      ? () => setVisible(true)
+                      : undefined
+                  }
+                />
               </motion.div>
             ) : currentGame ? (
               <GameCard

@@ -8,9 +8,10 @@ import { useLanguage } from "@/hooks/useLanguage"
 interface ErrorStateProps {
   message?: string
   onRetry?: () => void
+  onDebug?: () => void
 }
 
-export function ErrorState({ message, onRetry }: ErrorStateProps) {
+export function ErrorState({ message, onRetry, onDebug }: ErrorStateProps) {
   const { t } = useLanguage()
 
   return (
@@ -25,6 +26,11 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
           <Button onClick={onRetry} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             {t("errors.retry")}
+          </Button>
+        )}
+        {onDebug && (
+          <Button onClick={onDebug} variant="outline" className="mt-4">
+            Debug öffnen
           </Button>
         )}
       </CardContent>

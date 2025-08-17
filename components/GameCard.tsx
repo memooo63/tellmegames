@@ -44,6 +44,10 @@ export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShar
   const [isSharing, setIsSharing] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
 
+  if (!game.background_image) {
+    console.warn("[IMG] missing", { id: game.id, title: game.name })
+  }
+
   const formatPrice = (price?: number, currency = "EUR") => {
     if (price === undefined || price === null) {
       return t("game.price.unavailable")
@@ -89,7 +93,18 @@ export function GameCard({ game, seed, strategy, onReroll, onAlternative, onShar
     (s.store.slug || s.store.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$|/g, "")) as StoreSlug
 
   const openStore = (slug?: StoreSlug) => {
-    const url = buildStoreLink(game.name, game.stores as any, slug, game.steamAppId)
+    const { url, usedFallback } = buildStoreLink(
+      game.name,
+      game.stores as any,
+      slug,
+      game.steamAppId,
+    )
+    console.log("[LINK]", {
+      preferredStore: slug,
+      chosenUrl: url,
+      usedFallback,
+      steamAppId: game.steamAppId,
+    })
     window.open(url, "_blank", "noopener,noreferrer")
   }
 

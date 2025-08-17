@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import { Header } from "@/components/Header"
 import { CookieConsent } from "@/components/CookieConsent"
 import { Toaster } from "@/components/ui/toaster"
+import { DebugProvider, DebugPanel } from "@/components/DebugPanel"
 import { cookies } from "next/headers"
 import "./globals.css"
 
@@ -45,10 +46,13 @@ export default async function RootLayout({
         <link rel="alternate" hrefLang="de" href="/" />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <Header />
-        <main role="main">{children}</main>
-        <CookieConsent />
-        <Toaster />
+        <DebugProvider>
+          <Header />
+          <main role="main">{children}</main>
+          <CookieConsent />
+          <Toaster />
+          <DebugPanel />
+        </DebugProvider>
       </body>
     </html>
   )

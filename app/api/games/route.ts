@@ -1,9 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { searchGames, getGameStores } from "@/lib/api/rawg"
+import { getGameStores } from "@/lib/api/rawg"
 import { LRUCache } from "lru-cache"
-import { getRawgPlatformIds, getRawgStoreIds, getRawgGenreIds } from "@/lib/mapping"
+import { validateAndMapParams } from "@/lib/mapping"
 import { isPriceInRange } from "@/lib/price"
 import fallbackGames from "@/data/games-fallback.json"
+import crypto from "crypto"
 
 const memoryCache = new LRUCache<string, { games: any[]; fallback: boolean }>({
   max: 100,
@@ -23,22 +24,36 @@ function keyFromObj(searchParams: URLSearchParams) {
   return JSON.stringify(obj)
 }
 
-async function fetchRawg(params: any) {
-  const response = await searchGames({
-    ...params,
-    page_size: 40,
-    ordering: "-rating,-metacritic",
-    page: 1,
+async function fetchRawg(params: any, rid: string, trace: (p: string, e?: any) => void) {
+  const firstParams = { ...params, page_size: 40, ordering: "-rating,-metacritic", page: 1 }
+  const url1 = `https://api.rawg.io/api/games?${new URLSearchParams({
+    key: process.env.RAWG_KEY || "",
+    ...firstParams,
+  })}`
+  trace(`[${rid}] RAWG request`, { url: url1, page: 1, page_size: 40, filters: params })
+  const res1 = await fetch(url1)
+  const data1 = await res1.json().catch(() => ({}))
+  trace(`[${rid}] RAWG response`, {
+    status: res1.status,
+    count: data1?.count,
+    results: data1?.results?.length,
   })
-  let games = response.results || []
+  let games = data1.results || []
   if (games.length < 10) {
-    const second = await searchGames({
-      ...params,
-      page_size: 40,
-      ordering: "-rating,-metacritic",
-      page: 2,
+    const secondParams = { ...params, page_size: 40, ordering: "-rating,-metacritic", page: 2 }
+    const url2 = `https://api.rawg.io/api/games?${new URLSearchParams({
+      key: process.env.RAWG_KEY || "",
+      ...secondParams,
+    })}`
+    trace(`[${rid}] RAWG request`, { url: url2, page: 2, page_size: 40, filters: params })
+    const res2 = await fetch(url2)
+    const data2 = await res2.json().catch(() => ({}))
+    trace(`[${rid}] RAWG response`, {
+      status: res2.status,
+      count: data2?.count,
+      results: data2?.results?.length,
     })
-    games = [...games, ...(second.results || [])]
+    games = [...games, ...(data2.results || [])]
   }
   return games
 }
@@ -103,7 +118,7 @@ function filterGames(
   })
 }
 
-async function enrichSteamIds(games: any[]) {
+async function enrichSteamIds(games: any[], rid: string, trace: (p: string, e?: any) => void) {
   await Promise.all(
     games.map(async (g) => {
       const steamStore = g.stores?.find((s: any) => s.store?.slug === "steam")
@@ -112,16 +127,20 @@ async function enrichSteamIds(games: any[]) {
         if (match) {
           g.steamAppId = Number(match[1])
         } else {
+          trace(`[${rid}] steam resolve`, { id: g.id })
           try {
             const details = await getGameStores(g.id)
             const steam = details.find((s: any) => s.store?.slug === "steam")
             if (steam?.url) {
+              trace(`[${rid}] steam hit`, { id: g.id })
               steamStore.url = steam.url
               const m = steam.url.match(/\/app\/(\d+)/)
               if (m) g.steamAppId = Number(m[1])
+            } else {
+              trace(`[${rid}] steam miss`, { id: g.id })
             }
           } catch {
-            // ignore
+            trace(`[${rid}] steam fail`, { id: g.id })
           }
         }
       }
@@ -130,66 +149,65 @@ async function enrichSteamIds(games: any[]) {
 }
 
 export async function GET(req: NextRequest) {
-  const searchParams = req.nextUrl.searchParams
-  const platforms = searchParams.get("platforms")?.split(",") || []
-  const stores = searchParams.get("stores")?.split(",") || []
-  const genres = searchParams.get("genres")?.split(",") || []
-  const maxPrice = searchParams.get("maxPrice")
-  const freeToPlay = searchParams.get("freeToPlay") === "true"
-  const onlyHighRated = searchParams.get("onlyHighRated") === "true"
-  const startYear = searchParams.get("startYear")
-  const endYear = searchParams.get("endYear")
+  const T0 = Date.now()
+  const trace = (prefix: string, extra?: any) =>
+    console.log(`[TRACE] ${prefix} t+${Date.now() - T0}ms`, extra ?? "")
+  const rid = crypto.randomUUID()
 
-  const cacheKey = keyFromObj(searchParams)
+  trace(`[${rid}] RAWG_KEY ${process.env.RAWG_KEY ? "present" : "MISSING"}`)
+
+  const q = Object.fromEntries(req.nextUrl.searchParams.entries())
+  trace(`[${rid}] IN params`, q)
+  const { api, filters } = validateAndMapParams(q)
+  trace(`[${rid}] map`, {
+    platforms: api.platforms,
+    stores: api.stores,
+    genres: api.genres,
+    dates: api.dates,
+    priceMax: api.priceMax,
+  })
+
+  const cacheKey = keyFromObj(req.nextUrl.searchParams)
 
   try {
-    const apiParams: any = {}
-    if (platforms.length > 0) apiParams.platforms = getRawgPlatformIds(platforms as any)
-    if (stores.length > 0) apiParams.stores = getRawgStoreIds(stores as any)
-    if (genres.length > 0) apiParams.genres = getRawgGenreIds(genres as any)
-    if (startYear && endYear) apiParams.dates = `${startYear}-01-01,${endYear}-12-31`
-    if (freeToPlay) apiParams.tags = "free-to-play"
-
-    let storeFilterActive = true
-    let games = await fetchRawg(apiParams)
+    let storeFilterActive = Boolean(api.stores)
+    let games = await fetchRawg(api, rid, trace)
+    if (games.length === 0 && api.stores) {
+      trace(`[${rid}] retry without store filter`)
+      const paramsNoStore = { ...api }
+      delete paramsNoStore.stores
+      games = await fetchRawg(paramsNoStore, rid, trace)
+      storeFilterActive = false
+    }
     if (games.length < 10) {
       games = [...games, ...fallbackGames]
     }
-    if (games.length === 0 && stores.length > 0) {
-      const paramsNoStore = { ...apiParams }
-      delete paramsNoStore.stores
-      games = await fetchRawg(paramsNoStore)
-      if (games.length < 10) {
-        games = [...games, ...fallbackGames]
-      }
-      storeFilterActive = false
-    }
 
     let filteredGames = filterGames(games, {
-      platforms,
-      stores: storeFilterActive ? stores : [],
-      genres,
-      maxPrice: maxPrice ? Math.min(Number.parseFloat(maxPrice), 125) : undefined,
-      freeToPlay,
-      onlyHighRated,
+      platforms: filters.platforms,
+      stores: storeFilterActive ? filters.stores : [],
+      genres: filters.genres,
+      maxPrice: filters.priceMax,
+      freeToPlay: q.freeToPlay === "true",
+      onlyHighRated: q.onlyHighRated === "true",
       minRating: 3.0,
     })
 
-    if (filteredGames.length === 0 && freeToPlay) {
-      const retryParams = { ...apiParams }
+    if (filteredGames.length === 0 && q.freeToPlay === "true") {
+      const retryParams = { ...api }
       delete retryParams.genres
-      delete retryParams.maxPrice
-      let retryGames = await fetchRawg(retryParams)
+      delete retryParams.priceMax
+      let retryGames = await fetchRawg(retryParams, rid, trace)
       if (retryGames.length < 10) {
         retryGames = [...retryGames, ...fallbackGames]
       }
       filteredGames = filterGames(retryGames, {
-        platforms,
-        stores: storeFilterActive ? stores : [],
+        platforms: filters.platforms,
+        stores: storeFilterActive ? filters.stores : [],
         genres: [],
         maxPrice: undefined,
         freeToPlay: true,
-        onlyHighRated,
+        onlyHighRated: q.onlyHighRated === "true",
         minRating: 3.0,
       })
     }
@@ -197,11 +215,11 @@ export async function GET(req: NextRequest) {
     if (filteredGames.length === 0) {
       return NextResponse.json(
         { error: "Keine Spiele gefunden. Versuche weniger spezifische Filter.", games: [], total: 0, fallback: false },
-        { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=600", "x-cache": "live" } },
+        { headers: { "x-trace-id": rid } },
       )
     }
 
-    await enrichSteamIds(filteredGames)
+    await enrichSteamIds(filteredGames, rid, trace)
 
     memoryCache.set(cacheKey, { games: filteredGames, fallback: false })
     if (redis) {
@@ -210,7 +228,13 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { games: filteredGames, total: filteredGames.length, fallback: false },
-      { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=600", "x-cache": "live" } },
+      {
+        headers: {
+          "Cache-Control": "s-maxage=300, stale-while-revalidate=600",
+          "x-cache": "live",
+          "x-trace-id": rid,
+        },
+      },
     )
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
@@ -223,7 +247,13 @@ export async function GET(req: NextRequest) {
       }
       return NextResponse.json(
         { games, total: games.length, fallback: true },
-        { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=600", "x-cache": "fallback" } },
+        {
+          headers: {
+            "Cache-Control": "s-maxage=300, stale-while-revalidate=600",
+            "x-cache": "fallback",
+            "x-trace-id": rid,
+          },
+        },
       )
     }
 
@@ -235,14 +265,20 @@ export async function GET(req: NextRequest) {
     if (cached) {
       return NextResponse.json(
         { games: cached.games, total: cached.games.length, fallback: cached.fallback },
-        { headers: { "Cache-Control": "s-maxage=300, stale-while-revalidate=600", "x-cache": "cache" } },
+        {
+          headers: {
+            "Cache-Control": "s-maxage=300, stale-while-revalidate=600",
+            "x-cache": "cache",
+            "x-trace-id": rid,
+          },
+        },
       )
     }
 
     console.error("Games API error:", error)
     return NextResponse.json(
       { error: "Fehler beim Laden der Spiele. Bitte versuche es später erneut.", games: [], total: 0 },
-      { status: 500, headers: { "x-cache": "error" } },
+      { status: 500, headers: { "x-cache": "error", "x-trace-id": rid } },
     )
   }
 }
