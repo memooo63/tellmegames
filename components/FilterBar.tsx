@@ -15,6 +15,7 @@ import { Gamepad2, Shuffle, Star, Sparkles } from "lucide-react"
 import { generateSeed } from "@/lib/random"
 import { useLanguage } from "@/hooks/useLanguage"
 import type { Game } from "./GameCard"
+import { useDebug } from "@/components/DebugPanel"
 
 export interface FilterState {
   platforms: string[]
@@ -36,6 +37,7 @@ interface FilterBarProps {
 
 export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onError, onLoading }: FilterBarProps) {
   const { t } = useLanguage()
+  const { setInfo, setVisible } = useDebug()
 
   const [filters, setFilters] = useState<FilterState>({
     platforms: [],
@@ -101,7 +103,15 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
       params.append("seed", seed.toString())
       params.append("strategy", "balanced")
 
-      const response = await fetch(`/api/games?${params}`)
+      const url = `/api/games?${params}`
+      console.log("[DEBUG] fetch", url)
+      setInfo({
+        filters,
+        requestUrl: url,
+      })
+      const response = await fetch(url)
+      const traceId = response.headers.get("x-trace-id") || undefined
+      const cacheHit = response.headers.get("x-cache")
 
       if (!response.ok) {
         throw new Error(`API Error: ${response.status}`)
@@ -109,17 +119,35 @@ export function FilterBar({ initialFilters, onFiltersChange, onGameFound, onErro
 
       const data = await response.json()
 
-        if (data.error) {
-          onError?.(data.error)
-          return
-        }
+      setInfo({
+        traceId,
+        cacheHit,
+        resultCount: data.games ? data.games.length : data.game ? 1 : 0,
+        fallback: data.fallback,
+        error: data.error,
+      })
 
-        if (!data.game) {
-          onError?.(t("errors.noGames"))
-          return
-        }
+      if (data.games && data.games.length === 0) {
+        console.warn("[WARN] empty results", {
+          params: Object.fromEntries(params.entries()),
+          traceId,
+        })
+        setVisible(true)
+        onError?.(t("errors.noGames"))
+        return
+      }
 
-        onGameFound?.(data.game, seed, data.strategy)
+      if (data.error) {
+        onError?.(data.error)
+        return
+      }
+
+      if (!data.game) {
+        onError?.(t("errors.noGames"))
+        return
+      }
+
+      onGameFound?.(data.game, seed, data.strategy)
     } catch (error) {
       console.error("Game search error:", error)
       onError?.(error instanceof Error ? error.message : t("errors.apiError"))

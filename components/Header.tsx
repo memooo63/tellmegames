@@ -5,9 +5,12 @@ import { useLanguage } from "@/hooks/useLanguage"
 import { Gamepad2 } from "lucide-react"
 import { ThemeToggle } from "./ThemeToggle"
 import { LanguageSwitcher } from "./LanguageSwitcher"
+import { Button } from "@/components/ui/button"
+import { useDebug } from "@/components/DebugPanel"
 
 export function Header() {
   const { t, isLoading } = useLanguage()
+  const { visible, setVisible } = useDebug()
 
   if (isLoading) {
     return null
@@ -53,6 +56,9 @@ export function Header() {
           >
             <LanguageSwitcher />
             <ThemeToggle />
+            <Button variant="outline" size="sm" onClick={() => setVisible(!visible)}>
+              Debug
+            </Button>
           </motion.div>
         </div>
       </div>

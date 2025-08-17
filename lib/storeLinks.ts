@@ -6,14 +6,19 @@ export function buildStoreLink(title:string, stores?:GameStore[], preferred?:Sto
   const toSlug = (s:string)=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$|/g,"")
   const find = (s?:StoreSlug)=>stores?.find(x => normalizeSlug(x.store.slug??toSlug(x.store.name))===s)
   const id = steamAppId || extractSteamAppId(stores)
+  let usedFallback = false
   if ((preferred==="steam" || (!preferred && id)) && id) {
-    return `https://store.steampowered.com/app/${id}/${slugify(title)}/`
+    return { url: `https://store.steampowered.com/app/${id}/${slugify(title)}/`, usedFallback }
   }
   const s = preferred && find(preferred) || stores?.find(x=>x.url)
-  if (s?.url) return s.url
-  if (preferred) return search(preferred,q)
-  if (id) return `https://store.steampowered.com/app/${id}/${slugify(title)}/`
-  return search("steam",q)
+  if (s?.url) return { url: s.url, usedFallback }
+  if (preferred) {
+    usedFallback = true
+    return { url: search(preferred,q), usedFallback }
+  }
+  if (id) return { url: `https://store.steampowered.com/app/${id}/${slugify(title)}/`, usedFallback }
+  usedFallback = true
+  return { url: search("steam",q), usedFallback }
 
   function extractSteamAppId(arr?:GameStore[]){
     const u = arr?.find(x=>normalizeSlug(x.store.slug??toSlug(x.store.name))==="steam")?.url || ""
