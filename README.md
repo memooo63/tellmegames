@@ -31,7 +31,7 @@ Eine moderne Non-Profit-Website, die basierend auf deinen Präferenzen zufällig
 
 2. **Dependencies installieren**
    \`\`\`bash
-   npm install
+   pnpm install
    \`\`\`
 
 3. **Umgebungsvariablen konfigurieren**
@@ -39,13 +39,14 @@ Eine moderne Non-Profit-Website, die basierend auf deinen Präferenzen zufällig
    cp .env.example .env.local
    \`\`\`
    
-   Füge deine API-Keys hinzu:
-   - `RAWG_API_KEY`: Kostenlos bei [RAWG.io](https://rawg.io/apidocs)
-   - `STEAM_API_KEY`: Optional bei [Steam Web API](https://steamcommunity.com/dev/apikey)
+    Füge deine API-Keys hinzu:
+    - `RAWG_KEY`: Kostenlos bei [RAWG.io](https://rawg.io/apidocs)
+    - `STEAM_API_KEY`: Optional bei [Steam Web API](https://steamcommunity.com/dev/apikey)
+    - `NEXT_PUBLIC_BASE_URL`: Basis-URL der Anwendung (Standard: `http://localhost:3000`)
 
 4. **Development Server starten**
    \`\`\`bash
-   npm run dev
+   pnpm dev
    \`\`\`
 
 5. **Öffne** [http://localhost:3000](http://localhost:3000)
@@ -56,7 +57,7 @@ Eine moderne Non-Profit-Website, die basierend auf deinen Präferenzen zufällig
 1. Gehe zu [RAWG.io](https://rawg.io/apidocs)
 2. Erstelle einen kostenlosen Account
 3. Generiere einen API-Key
-4. Füge ihn als `RAWG_API_KEY` in `.env.local` hinzu
+4. Füge ihn als `RAWG_KEY` in `.env.local` hinzu
 
 ### Steam Web API (Optional)
 1. Gehe zu [Steam Web API](https://steamcommunity.com/dev/apikey)
